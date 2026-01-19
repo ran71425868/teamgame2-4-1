@@ -49,9 +49,9 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-/teamgame2-4/Library
-/teamgame2-4/Logs
-/teamgame2-4/Temp
-/teamgame2-4/UserSettings
-/teamgame2-4/teamgame2-4.sln
-/teamgame2-4/.vsconfig
+/teamgame2-4-1/Library
+/teamgame2-4-1/Logs
+/teamgame2-4-1/Temp
+/teamgame2-4-1/UserSettings
+/teamgame2-4-1/teamgame2-4.sln
+/teamgame2-4-1/.vsconfig
