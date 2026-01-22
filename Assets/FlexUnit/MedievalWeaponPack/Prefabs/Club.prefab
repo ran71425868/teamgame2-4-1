@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 5650004433075077730}
   - component: {fileID: 8774985205898120647}
   - component: {fileID: 6783535687536572685}
+  - component: {fileID: 3173023279134295672}
   m_Layer: 0
   m_Name: Club
   m_TagString: Untagged
@@ -83,3 +84,15 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3173023279134295672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4981836282949982424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aeb6e4a63f17574f9531e6cf025b7d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

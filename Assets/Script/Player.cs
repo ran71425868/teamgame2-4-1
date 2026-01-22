@@ -5,10 +5,10 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class Player : MonoBehaviour
 {
-    public float runSpeed = 7.0f;    // 通常時（走り）の速さ
-    public float walkSpeed = 3.0f;   // シフト押下時（歩き）の速さ
-    public float gravity = 9.81f;    // 重力の強さ
-    public float jumpHeight = 2.0f;  // ジャンプの高さ
+    private float runSpeed = 7.0f;    // 通常時（走り）の速さ
+    private float walkSpeed = 3.0f;   // シフト押下時（歩き）の速さ
+    private float gravity = 9.81f;    // 重力の強さ
+    private float jumpHeight = 1.5f;  // ジャンプの高さ
 
     private CharacterController controller;
     private Vector3 velocity;// 垂直方向の速度（重力用）
