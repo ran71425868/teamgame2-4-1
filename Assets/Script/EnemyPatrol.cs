@@ -17,11 +17,13 @@ public class EnemyPatrol : MonoBehaviour
     [Header("索敵の設定")]
     private float searchRange = 20f;      // 索敵距離
     private float searchAngle = 90f;      // 視界の角度（左右に30度ずつ）
+    private float alertWaitTime = 2.0f;   // 音の場所に着いた後の警戒時間
     private Transform player;             // プレイヤーのTransform
 
     private NavMeshAgent agent;
     private bool isWaiting = false;   // 待機中かどうか
     private bool isChasing = false;
+    private bool isInvestigating = false; // 音を調査中か
     private Animator anim; // 追加
 
 
@@ -41,7 +43,7 @@ public class EnemyPatrol : MonoBehaviour
     void Update()
     {
 
-        // 1. プレイヤーが視界に入っているかチェック
+        // プレイヤーが視界に入っているかチェック
         if (CanSeePlayer())
         {
             // 現在の速度をAnimatorに伝える
@@ -50,6 +52,7 @@ public class EnemyPatrol : MonoBehaviour
             if (!isChasing)
             {
                 isChasing = true;
+                isInvestigating = false; // 追跡を優先
                 agent.speed = dashSpeed; // 速度をダッシュに切り替え
                 StopAllCoroutines(); // 待機処理などを中断
                 isWaiting = false;
@@ -58,7 +61,7 @@ public class EnemyPatrol : MonoBehaviour
         }
         else
         {
-            // 2. プレイヤーを見失った後の処理
+            // プレイヤーを見失った後の処理
             if (isChasing)
             {
                 isChasing = false;
@@ -66,7 +69,16 @@ public class EnemyPatrol : MonoBehaviour
                 SetRandomDestination(); // 再び散策へ
             }
 
-            // 3. 通常のランダム散策
+            if (isInvestigating)
+            {
+                // 音の場所に到着したか確認
+                if (!agent.pathPending && agent.remainingDistance < 0.5f)
+                {
+                    StartCoroutine(InvestigateAndResume());
+                }
+            }
+
+            // 通常のランダム散策
             if (!agent.pathPending && agent.remainingDistance < 0.5f && !isWaiting)
             {
                 StartCoroutine(WaitAndMove());
@@ -74,6 +86,31 @@ public class EnemyPatrol : MonoBehaviour
         }
     }
 
+    // --- プレイヤーから呼ばれる足音受信メソッド ---
+    public void HearSound(Vector3 soundPosition)
+    {
+        // 追跡中なら音は無視する
+        if (isChasing) return;
+
+        isInvestigating = true;
+        isWaiting = false;
+        StopAllCoroutines();
+
+        agent.speed = walkSpeed; // 警戒しつつ移動
+        agent.destination = soundPosition;
+    }
+
+    // 音の場所に到着した後のキョロキョロ処理
+    IEnumerator InvestigateAndResume()
+    {
+        isInvestigating = false;
+        isWaiting = true;
+        yield return new WaitForSeconds(alertWaitTime);
+        SetRandomDestination();
+        isWaiting = false;
+    }
+
+    // プレイヤーが視界に入っているかを判定するメソッド
     bool CanSeePlayer()
     {
         float distance = Vector3.Distance(transform.position, player.position);
@@ -97,6 +134,7 @@ public class EnemyPatrol : MonoBehaviour
         return false;
     }
 
+    // 待機してから新しい目的地に移動するコルーチン
     IEnumerator WaitAndMove()
     {
         isWaiting = true;
@@ -110,7 +148,7 @@ public class EnemyPatrol : MonoBehaviour
         isWaiting = false;
     }
 
-
+    // ランダムな目的地を設定するメソッド
     void SetRandomDestination()
     {
         // 現在地を中心に、walkRadiusの範囲内でランダムな方向を決定
