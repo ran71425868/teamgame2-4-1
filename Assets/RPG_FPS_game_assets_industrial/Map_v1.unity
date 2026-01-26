@@ -3146,7 +3146,7 @@ GameObject:
   - component: {fileID: 287416006}
   - component: {fileID: 287416005}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: spawnItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3166,6 +3166,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemPrefabs:
   - {fileID: 2441058836130299858, guid: 72632788486754f8caaf97b85bf5dbf6, type: 3}
+  - {fileID: 1121434152644462892, guid: e39f50de20c524f858b8a2a10fb7f1c6, type: 3}
+  - {fileID: 4981836282949982424, guid: 536fb2e4ed1584d2bb6d71edfe7dc9e5, type: 3}
+  - {fileID: 1274142545500504308, guid: 3cfc4713418924499bc31f35f36c1c3d, type: 3}
+  - {fileID: 4976903695282299247, guid: d4d174913e7cc4ea1b1bf5a64b3a1ba6, type: 3}
+  - {fileID: 2298969278469469772, guid: 61c11221982a74dce8c62ae0710b7333, type: 3}
   - {fileID: 1121434152644462892, guid: e39f50de20c524f858b8a2a10fb7f1c6, type: 3}
 --- !u!4 &287416006
 Transform:
@@ -22472,10 +22477,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48375944f647850419b4e4764f4d5fe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  runSpeed: 7
-  walkSpeed: 3
-  gravity: 9.8
-  jumpHeight: 2
+  sfxSource: {fileID: 0}
+  jumpSound: {fileID: 0}
+  landSound: {fileID: 0}
 --- !u!4 &1755887299 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: 82a2914d8f86c62488456950c8330e38, type: 3}
