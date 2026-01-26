@@ -5,25 +5,33 @@ using UnityEngine.AI;
 
 public class EnemyPatrol : MonoBehaviour
 {
-
-    [Header("移動速度の設定")]
+    //[Header("移動速度の設定")]
     private float walkSpeed = 3.0f;       // 通常時の速さ
     private float dashSpeed = 8.0f;       // 追跡時の速さ
 
-    [Header("散策の設定")]
+   // [Header("散策の設定")]
     private float walkRadius = 100f; // ランダムに移動する範囲
    private float waitTime = 2.0f;     // 待機時間（秒）
 
-    [Header("索敵の設定")]
+    //[Header("索敵の設定")]
     private float searchRange = 20f;      // 索敵距離
     private float searchAngle = 90f;      // 視界の角度（左右に30度ずつ）
     private float alertWaitTime = 2.0f;   // 音の場所に着いた後の警戒時間
     private Transform player;             // プレイヤーのTransform
 
-    private NavMeshAgent agent;
+    // --- 状態管理用フラグ ---
+    //private Transform targetItem; // 見つけたアイテム
+    private Transform targetWeapon; // 見つけた武器
+    //private bool isHeadingToItem = false;
+    private bool isHeadingToWeapon = false;
+    //private bool canHearPlayer = false;
+    private bool hasWeapon = false;
     private bool isWaiting = false;   // 待機中かどうか
     private bool isChasing = false;
     private bool isInvestigating = false; // 音を調査中か
+
+    private NavMeshAgent agent;
+    private EnemyEquipment equipment;
     private Animator anim; // 追加
 
 
@@ -31,67 +39,173 @@ public class EnemyPatrol : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        anim = GetComponent<Animator>(); // Animatorを取得
-        agent.speed = walkSpeed; // 最初は歩き速度に設定
-
-        // プレイヤーをタグで自動取得（タグが"Player"に設定されていること）
+        anim = GetComponent<Animator>();
+        equipment = GetComponent<EnemyEquipment>();
+        agent.speed = walkSpeed;
         if (player == null) player = GameObject.FindGameObjectWithTag("Player").transform;
-
         SetRandomDestination();
     }
 
     void Update()
     {
+       if (anim != null) anim.SetFloat("Speed", agent.velocity.magnitude);
 
-        // プレイヤーが視界に入っているかチェック
-        if (CanSeePlayer())
+        // --- 1. 最優先：プレイヤーが視界にいるかチェック ---
+        if (hasWeapon&&CanSeeObject(player))
         {
-            // 現在の速度をAnimatorに伝える
-            float currentSpeed = agent.velocity.magnitude;
-            anim.SetFloat("Speed", currentSpeed);
+            // プレイヤーを発見したらアイテムへの未練を即座に捨てる
             if (!isChasing)
             {
                 isChasing = true;
-                isInvestigating = false; // 追跡を優先
-                agent.speed = dashSpeed; // 速度をダッシュに切り替え
-                StopAllCoroutines(); // 待機処理などを中断
+                isHeadingToWeapon = false; // アイテム移動を中止
+                targetWeapon = null;
+                isInvestigating = false;
+                agent.speed = dashSpeed;
+                StopAllCoroutines();
                 isWaiting = false;
             }
-            agent.destination = player.position; // 追跡
+            agent.destination = player.position;
         }
+        // --- 2. プレイヤーが視界にいない場合の優先順位 ---
         else
         {
-            // プレイヤーを見失った後の処理
+            // 追跡中だったがプレイヤーを見失った直後
             if (isChasing)
             {
                 isChasing = false;
-                agent.speed = walkSpeed; // 速度を歩きに戻す
-                SetRandomDestination(); // 再び散策へ
+                agent.speed = walkSpeed;
+                SetRandomDestination();
             }
 
-            if (isInvestigating)
+            // A: アイテムを優先して探す・向かう
+            // A: 武器をまだ持っていないなら、最優先で武器を探す
+            if (!hasWeapon)
             {
-                // 音の場所に到着したか確認
+                SearchForWeapon();
+            }
+
+            if (isHeadingToWeapon && targetWeapon != null)
+            {
+                agent.destination = targetWeapon.position;
+                if (!agent.pathPending && agent.remainingDistance < 1.0f)
+                {
+                    EquipWeapon();
+                }
+            }
+            // B: 音の調査（アイテム取得後のみ機能）
+            else if (isInvestigating)
+            {
                 if (!agent.pathPending && agent.remainingDistance < 0.5f)
                 {
                     StartCoroutine(InvestigateAndResume());
                 }
             }
-
-            // 通常のランダム散策
-            if (!agent.pathPending && agent.remainingDistance < 0.5f && !isWaiting)
+            // C: 通常散策
+            else if (!agent.pathPending && agent.remainingDistance < 0.5f && !isWaiting)
             {
                 StartCoroutine(WaitAndMove());
             }
         }
+
+    }
+
+    // アイテムを探すメソッド
+    void SearchForWeapon()
+    {
+        if (isHeadingToWeapon) return; // すでに移動中ならスキップ
+
+        // 周囲の「Item」タグを持つオブジェクトを探す
+        GameObject[] items = GameObject.FindGameObjectsWithTag("Weapon");
+     
+        foreach (GameObject item in items)
+        {
+            if (CanSeeObject(item.transform))
+            {
+                targetWeapon = item.transform;
+                isHeadingToWeapon = true;
+                isInvestigating = false;
+                agent.speed = walkSpeed; // アイテムへは歩いて向かう
+                break;
+            }
+        }
+    }
+
+    // アイテムを拾って使う処理
+    //void UseItem()
+    //{
+    //    Debug.Log(targetWeapon.name + " を拾って使用しました！");
+
+    //    // ここにアイテムの効果（体力を回復するなど）を書く
+
+    //    hasWeapon = true;
+    //    Destroy(targetWeapon.gameObject); // マップから消す
+    //    targetWeapon = null;
+    //    isHeadingToWeapon = false;
+    //    StartCoroutine(InvestigateAndResume());
+    //}
+
+    void EquipWeapon()
+    {
+        if (targetWeapon == null) return;
+
+        string weaponName = targetWeapon.name;
+        Debug.Log(weaponName + " を拾いました！");
+
+        // 装備スクリプトに「この名前の武器を表示して」と命令する
+        equipment.ChangeWeaponVisual(targetWeapon.name);
+
+        hasWeapon = true;
+        Destroy(targetWeapon.gameObject);
+        targetWeapon = null;
+        isHeadingToWeapon = false;
+        StartCoroutine(InvestigateAndResume());
+    }
+
+    // 視界判定の汎用メソッド（引数をTransformに変更）
+    bool CanSeeObject(Transform target)
+    {
+        if (target == null) return false;
+
+        float distance = Vector3.Distance(transform.position, target.position);
+        if (distance < searchRange)
+        {
+            // 修正ポイント1: 敵の「目」の高さを少し上げ、前方へオフセット（自分に当たらないように）
+            Vector3 eyePosition = transform.position + Vector3.up * 1.5f + transform.forward * 0.5f;
+
+            // 修正ポイント2: アイメントの中心（少し上）を狙う
+            Vector3 targetCenter = target.position + Vector3.up * 0.5f;
+            Vector3 directionToTarget = (targetCenter - eyePosition).normalized;
+
+            float angle = Vector3.Angle(transform.forward, directionToTarget);
+
+            if (angle < searchAngle)
+            {
+                RaycastHit hit;
+
+                // シーンビューで視線を可視化（デバッグ用）
+                Debug.DrawRay(eyePosition, directionToTarget * distance, Color.green);
+
+                // 修正ポイント3: Raycastの判定ロジック
+                if (Physics.Raycast(eyePosition, directionToTarget, out hit, searchRange))
+                {
+                    // 当たったものがターゲットそのものか、その親/子であればOK
+                    if (hit.transform == target || hit.transform.IsChildOf(target) || target.IsChildOf(hit.transform))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     // --- プレイヤーから呼ばれる足音受信メソッド ---
     public void HearSound(Vector3 soundPosition)
     {
         // 追跡中なら音は無視する
-        if (isChasing) return;
+        if (!hasWeapon || isChasing) return;
 
+        if (isHeadingToWeapon) return;
         isInvestigating = true;
         isWaiting = false;
         StopAllCoroutines();
@@ -108,30 +222,6 @@ public class EnemyPatrol : MonoBehaviour
         yield return new WaitForSeconds(alertWaitTime);
         SetRandomDestination();
         isWaiting = false;
-    }
-
-    // プレイヤーが視界に入っているかを判定するメソッド
-    bool CanSeePlayer()
-    {
-        float distance = Vector3.Distance(transform.position, player.position);
-        if (distance < searchRange)
-        {
-            // プレイヤーへの方向
-            Vector3 directionToPlayer = (player.position - transform.position).normalized;
-            // 自分の正面との角度差
-            float angle = Vector3.Angle(transform.forward, directionToPlayer);
-
-            if (angle < searchAngle)
-            {
-                // 間に障害物がないかレイキャストで確認
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position + Vector3.up, directionToPlayer, out hit, searchRange))
-                {
-                    if (hit.transform == player) return true;
-                }
-            }
-        }
-        return false;
     }
 
     // 待機してから新しい目的地に移動するコルーチン
