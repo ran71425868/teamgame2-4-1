@@ -1,0 +1,22 @@
+# Blender 5.0.1 MTL File: 'None'
+# www.blender.org
+
+newmtl Breastplate_Armor_body
+Ns 79.999985
+Ka 1.000000 1.000000 1.000000
+Ks 0.450000 0.450000 0.450000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Breastplate_Armor_ver._B_v1_L3.123c850cee48-6565-49aa-ba9b-49b9e5005de0/Breastplate_Armor_body.jpg
+
+newmtl Breastplate_Armor_strap
+Ns 10.000005
+Ka 1.000000 1.000000 1.000000
+Ks 0.360000 0.360000 0.360000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Breastplate_Armor_ver._B_v1_L3.123c850cee48-6565-49aa-ba9b-49b9e5005de0/Breastplate_Armor_strap.jpg

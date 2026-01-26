@@ -19,6 +19,9 @@ public class FPSCameraController : MonoBehaviour
 
     void Update()
     {
+        // ゲームが一時停止中なら処理しない
+        if (GameManager.isPaused) return;
+
         // 1. マウスの移動量を取得
         float mouseX = Input.GetAxis("Mouse X") * sensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
@@ -36,5 +39,10 @@ public class FPSCameraController : MonoBehaviour
         // 4. 【カメラ（首）に反映】
         // カメラのローカルの回転（X軸）だけを書き換える
         cameraTransform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+    }
+
+    public void SetSensitivity(float newSensitivity)
+    {
+        sensitivity = newSensitivity;
     }
 }
