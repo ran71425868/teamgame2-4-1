@@ -7,6 +7,6 @@ public class TitleManager : MonoBehaviour
 {
     public void OnStartButton()
     {
-        SceneManager.LoadScene("Map_v1"); // "" の部分はシーンの名前に変更
+        SceneManager.LoadScene("Tutorial"); // "" の部分はシーンの名前に変更
     }
 }
