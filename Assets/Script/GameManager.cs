@@ -97,6 +97,7 @@ public class GameManager : MonoBehaviour
     // タイトルへ戻るボタン
     public void GoToTitle()
     {
+        isPaused = false;
         Time.timeScale = 1f; // 重要：時間を戻してからシーン移動
         SceneManager.LoadScene("TitleScene"); // タイトルシーンの名前に合わせて変更
     }
