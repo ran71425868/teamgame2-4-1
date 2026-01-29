@@ -34,14 +34,7 @@ public class Pickup : MonoBehaviour
             }
         }
     }
-    void TryPickup()
-    {
-        Ray ray = new Ray(
-            fpsCamera.transform.position,
-            fpsCamera.transform.forward
-        );
-
-    }
+   
 
     // --- •ÏX: Ray‚ğí‚É”ò‚Î‚µ‚ÄUI‚ğ§Œä‚·‚é ---
     void CheckObjectInSight()
