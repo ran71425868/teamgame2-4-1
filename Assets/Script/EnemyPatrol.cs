@@ -20,11 +20,8 @@ public class EnemyPatrol : MonoBehaviour
     private Transform player;             // プレイヤーのTransform
 
     // --- 状態管理用フラグ ---
-    //private Transform targetItem; // 見つけたアイテム
     private Transform targetWeapon; // 見つけた武器
-    //private bool isHeadingToItem = false;
     private bool isHeadingToWeapon = false;
-    //private bool canHearPlayer = false;
     private bool hasWeapon = false;
     private bool isWaiting = false;   // 待機中かどうか
     private bool isChasing = false;
@@ -34,6 +31,8 @@ public class EnemyPatrol : MonoBehaviour
     private float lastAttackTime;
     private float attackCooldown = 1.5f;
 
+    private Transform targetItem; // 追加
+    private bool isHeadingToItem = false; // 追加
 
     private NavMeshAgent agent;
     private EnemyEquipment equipment;
@@ -118,7 +117,22 @@ public class EnemyPatrol : MonoBehaviour
             {
                 SearchForWeapon();
             }
+            else
+            {
+                SearchForItem(); // 武器があるならアイテムを探す
+            }
 
+            // アイテムへ向かう処理
+            if (isHeadingToItem && targetItem != null)
+            {
+                agent.destination = targetItem.position;
+                if (!agent.pathPending && agent.remainingDistance < 1.0f)
+                {
+                    PickupItem();
+                }
+            }
+
+            // 武器へ向かう処理
             if (isHeadingToWeapon && targetWeapon != null)
             {
                 agent.destination = targetWeapon.position;
@@ -161,20 +175,6 @@ public class EnemyPatrol : MonoBehaviour
             }
         }
     }
-
-    // アイテムを拾って使う処理
-    //void UseItem()
-    //{
-    //    Debug.Log(targetWeapon.name + " を拾って使用しました！");
-
-    //    // ここにアイテムの効果（体力を回復するなど）を書く
-
-    //    hasWeapon = true;
-    //    Destroy(targetWeapon.gameObject); // マップから消す
-    //    targetWeapon = null;
-    //    isHeadingToWeapon = false;
-    //    StartCoroutine(InvestigateAndResume());
-    //}
 
     void EquipWeapon()
     {
@@ -293,5 +293,38 @@ public class EnemyPatrol : MonoBehaviour
         {
             anim.SetTrigger("Attack");
         }
+    }
+
+    void SearchForItem()
+    {
+        if (isHeadingToItem || isChasing) return;
+
+        // "Item"タグがついたオブジェクトを探す
+        GameObject[] items = GameObject.FindGameObjectsWithTag("Item");
+        foreach (GameObject item in items)
+        {
+            if (CanSeeObject(item.transform))
+            {
+                targetItem = item.transform;
+                isHeadingToItem = true;
+                agent.speed = walkSpeed;
+                break;
+            }
+        }
+    }
+
+    void PickupItem()
+    {
+        if (targetItem == null) return;
+
+        // 見た目を反映
+        equipment.EquipItemVisual(targetItem.name);
+
+        Destroy(targetItem.gameObject);
+        targetItem = null;
+        isHeadingToItem = false;
+
+        // 拾った後に少し警戒する動作
+        StartCoroutine(InvestigateAndResume());
     }
 }
