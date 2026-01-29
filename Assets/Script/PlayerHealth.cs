@@ -9,11 +9,12 @@ public class PlayerHealth : MonoBehaviour
     private float currentHealth;
 
     public bool isDead = false; // 死亡フラグ
-
+    private Armor armor;
     void Start()
     {
         // ゲーム開始時に体力を全回復
         currentHealth = maxHealth;
+        armor = GetComponent<Armor>();
     }
 
     void Update()
@@ -27,10 +28,22 @@ public class PlayerHealth : MonoBehaviour
     // ダメージを受ける関数（外部から呼び出す）
     public void TakeDamage(float amount)
     {
-        if (isDead) return; // すでに死んでいたら何もしない
+        if (isDead) return;
 
-        currentHealth -= amount;
-        Debug.Log("現在の体力: " + currentHealth);
+        int damage = Mathf.RoundToInt(amount);
+
+        // アーマーで先に吸収
+        if (armor != null)
+        {
+            damage = armor.AbsorbDamage(damage);
+        }
+
+        // 残りをHPへ
+        if (damage > 0)
+        {
+            currentHealth -= damage;
+            Debug.Log("HP : " + currentHealth);
+        }
 
         if (currentHealth <= 0)
         {
