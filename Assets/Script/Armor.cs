@@ -11,11 +11,18 @@ public class Armor : MonoBehaviour
     public int maxArmor = 0;        // 最大アーマー
     public int currentArmor = 0;    // 現在のアーマー
     public int armorValue = 50;     // Pickup時に渡す値
-
+    public HUDManager hudManager;
     // =========================
     // Player側処理
     // =========================
-
+    void Start()
+    {
+        // ゲーム開始時にUIをリセット（プレイヤーの場合のみ）
+        if (isPlayer && hudManager != null)
+        {
+            hudManager.UpdateArmor(currentArmor, maxArmor);
+        }
+    }
     // アーマーを装備（着替え）
     public void EquipArmor(int value)
     {
@@ -23,6 +30,7 @@ public class Armor : MonoBehaviour
         currentArmor = value;
 
         Debug.Log("Armor Equipped : " + value);
+        if (hudManager != null) hudManager.UpdateArmor(currentArmor, maxArmor);
     }
 
     // ダメージを吸収して、残りダメージを返す
@@ -36,7 +44,7 @@ public class Armor : MonoBehaviour
 
         Debug.Log("Armor Absorbed : " + absorbed +
                   " / Remaining Armor : " + currentArmor);
-
+        if (hudManager != null) hudManager.UpdateArmor(currentArmor, maxArmor);
         return damage - absorbed;
     }
 
