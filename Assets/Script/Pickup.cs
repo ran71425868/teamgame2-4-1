@@ -1,31 +1,40 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+// FPS用：武器・アーマーを拾って装備／管理するクラス
 public class Pickup : MonoBehaviour
 {
+    // =========================
+    // 拾う設定
+    // =========================
+
     [Header("Pickup Settings")]
-    public Camera fpsCamera;          // FPS用カメラ
-    public float pickupDistance = 3f; // 拾える距離
+    public Camera fpsCamera;
+    public float pickupDistance = 3f;
     public KeyCode pickupKey = KeyCode.E;
 
-    [Header("Equip Settings")]
-    public Transform handPoint;       // 武器を持たせる位置
-    private GameObject currentItem;   // 現在装備中のアイテム
+    // =========================
+    // 武器装備
+    // =========================
+
+    [Header("Weapon Equip")]
+    public Transform handPoint;
+    private GameObject currentWeapon;
+
+   
 
     void Update()
     {
-        // 拾うキーが押されたら
         if (Input.GetKeyDown(pickupKey))
         {
             TryPickup();
         }
     }
 
-    // アイテムを拾えるかチェック
+    // =========================
+    // 拾う判定
+    // =========================
     void TryPickup()
     {
-        // カメラ位置から正面にRayを飛ばす
         Ray ray = new Ray(
             fpsCamera.transform.position,
             fpsCamera.transform.forward
@@ -33,44 +42,47 @@ public class Pickup : MonoBehaviour
 
         RaycastHit hit;
 
-        // 指定距離以内に何か当たったら
-        if (Physics.Raycast(ray, out hit, pickupDistance))
-        {
-            // WeaponItem が付いてるか？
-            WeaponItem item = hit.collider.GetComponent<WeaponItem>();
+        if (!Physics.Raycast(ray, out hit, pickupDistance))
+            return;
 
-            if (item != null)
-            {
-                // アイテム側のPickup処理を呼ぶ
-                item.Pickup(this);
-            }
+        // ----------------------
+        // 武器
+        // ----------------------
+        WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
+        if (weapon != null)
+        {
+            weapon.Pickup(this);
+            return;
         }
+
+      
     }
 
-    // WeaponItem から呼ばれる装備処理
-    public void EquipItem(GameObject equipPrefab)
+    // =========================
+    // 武器装備
+    // =========================
+    public void EquipItem(GameObject prefab)
     {
-        if (equipPrefab == null) return;
+        if (prefab == null) return;
 
-        // すでに持ってたら破棄
-        if (currentItem != null)
-        {
-            Destroy(currentItem);
-        }
+        if (currentWeapon != null)
+            Destroy(currentWeapon);
 
-        // 手元に装備
-        currentItem = Instantiate(equipPrefab, handPoint);
-        currentItem.transform.localPosition = Vector3.zero;
-        currentItem.transform.localRotation = Quaternion.identity;
-
+        currentWeapon = Instantiate(prefab, handPoint);
+        currentWeapon.transform.localPosition = Vector3.zero;
+        currentWeapon.transform.localRotation = Quaternion.identity;
     }
+
+
+    // =========================
+    // 武器ズレ防止
+    // =========================
     void LateUpdate()
     {
-        if (currentItem != null)
+        if (currentWeapon != null)
         {
-            currentItem.transform.localPosition = Vector3.zero;
-            currentItem.transform.localRotation = Quaternion.identity;
+            currentWeapon.transform.localPosition = Vector3.zero;
+            currentWeapon.transform.localRotation = Quaternion.identity;
         }
     }
-
 }
