@@ -10,6 +10,8 @@ public class EnemyEquipment : MonoBehaviour
     public GameObject hammerModel;
     public GameObject defaultWeapon;
 
+    [Header("アイテム（防具）モデル")]
+    public GameObject chestArmorModel; // インスペクターで胴体のアーマーモデルをセット
     public void ChangeWeaponVisual(string weaponName)
     {
         // 全ての武器を一度非表示にする（念のため）
@@ -86,6 +88,23 @@ public class EnemyEquipment : MonoBehaviour
         {
             EnemyWeapon script = model.GetComponent<EnemyWeapon>();
             if (script != null) script.SetAttackActive(active);
+        }
+    }
+
+
+    public void EquipItemVisual(string itemName)
+    {
+        // 全てのアイテムを一度非表示にする（必要に応じて）
+        if (chestArmorModel) chestArmorModel.SetActive(false);
+
+        // アイテム名に "Armor" が含まれていたら表示
+        if (itemName.Contains("Armor"))
+        {
+            if (chestArmorModel)
+            {
+                chestArmorModel.SetActive(true);
+                Debug.Log("アーマーを装備しました！");
+            }
         }
     }
 }
