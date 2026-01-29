@@ -10,11 +10,16 @@ public class PlayerHealth : MonoBehaviour
 
     public bool isDead = false; // 死亡フラグ
     private Armor armor;
+    public HUDManager hudManager;
+
     void Start()
     {
         // ゲーム開始時に体力を全回復
         currentHealth = maxHealth;
         armor = GetComponent<Armor>();
+
+        if (hudManager != null) hudManager.UpdateHP(currentHealth, maxHealth);
+
     }
 
     void Update()
@@ -44,7 +49,7 @@ public class PlayerHealth : MonoBehaviour
             currentHealth -= damage;
             Debug.Log("HP : " + currentHealth);
         }
-
+        if (hudManager != null) hudManager.UpdateHP(currentHealth, maxHealth);
         if (currentHealth <= 0)
         {
             Die();
