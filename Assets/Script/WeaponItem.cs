@@ -5,8 +5,26 @@ using UnityEngine;
 public class WeaponItem : MonoBehaviour
 {
     public GameObject equipPrefab;
+    public GameObject pickupUI;
 
-  
+    void Start()
+    {
+        // 最初は必ず非表示にしておく
+        if (pickupUI != null) pickupUI.SetActive(false);
+    }
+
+    // プレイヤーに見られた時
+    public void OnLookEnter()
+    {
+        if (pickupUI != null) pickupUI.SetActive(true);
+    }
+
+    // 目を逸らされた時
+    public void OnLookExit()
+    {
+        if (pickupUI != null) pickupUI.SetActive(false);
+    }
+
     public void Pickup(Pickup player)
     {
         // 物理停止
