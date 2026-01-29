@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3707633826737036339}
   - component: {fileID: 1481928487734536441}
   - component: {fileID: -1901155761059299842}
+  - component: {fileID: 4729890838370223951}
   - component: {fileID: 2541495071929609593}
   m_Layer: 0
   m_Name: Hammer
@@ -97,6 +98,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a6fe28f71ddfd4da54676d0a09d18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4729890838370223951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121434152644462892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a1c95c7119b264ebd52cba44fdb7df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 10
+  active: 0
 --- !u!65 &2541495071929609593
 BoxCollider:
   m_ObjectHideFlags: 0

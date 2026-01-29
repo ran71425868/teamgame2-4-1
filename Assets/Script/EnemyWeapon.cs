@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class EnemyWeapon : MonoBehaviour
 {
     public int damage = 10;
     private bool canDamage = false;
+    public int active;
 
     // アニメーションから呼び出して判定をON/OFFする
     public void SetAttackActive(bool active)
@@ -22,4 +24,5 @@ public class EnemyWeapon : MonoBehaviour
             canDamage = false; // 1回の振りで2回当たらないようにする
         }
     }
+
 }

@@ -30,9 +30,14 @@ public class EnemyPatrol : MonoBehaviour
     private bool isChasing = false;
     private bool isInvestigating = false; // 音を調査中か
 
+    private  float attackRange = 2.0f; // 攻撃が届く距離
+    private float lastAttackTime;
+    private float attackCooldown = 1.5f;
+
+
     private NavMeshAgent agent;
     private EnemyEquipment equipment;
-    private Animator anim; // 追加
+    private Animator anim;                     
 
 
 
@@ -48,28 +53,59 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
-       if (anim != null) anim.SetFloat("Speed", agent.velocity.magnitude);
+        if (anim != null) anim.SetFloat("Speed", agent.velocity.magnitude);
 
-        // --- 1. 最優先：プレイヤーが視界にいるかチェック ---
-        if (hasWeapon&&CanSeeObject(player))
+        // 1. プレイヤーを視界で捉えている場合
+        if (hasWeapon && CanSeeObject(player))
         {
-            // プレイヤーを発見したらアイテムへの未練を即座に捨てる
+            // 発見した瞬間の初期設定
             if (!isChasing)
             {
                 isChasing = true;
-                isHeadingToWeapon = false; // アイテム移動を中止
+                isHeadingToWeapon = false;
                 targetWeapon = null;
                 isInvestigating = false;
                 agent.speed = dashSpeed;
+                agent.isStopped = false; // 追跡開始時は動けるようにする
                 StopAllCoroutines();
                 isWaiting = false;
             }
-            agent.destination = player.position;
+
+            float distance = Vector3.Distance(transform.position, player.position);
+
+            // --- 攻撃の間合い判定 ---
+            if (distance <= attackRange)
+            {
+                // 攻撃範囲内：足を止める
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+
+                // プレイヤーの方を向く
+                Vector3 lookPos = player.position - transform.position;
+                lookPos.y = 0;
+                if (lookPos != Vector3.zero)
+                    transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookPos), Time.deltaTime * 10f);
+
+                // クールタイムが終わっていれば攻撃
+                if (Time.time > lastAttackTime + attackCooldown)
+                {
+                    Attack();
+                }
+            }
+            else
+            {
+                // 攻撃範囲外：追いかける
+                agent.isStopped = false; // ここで移動を許可する
+                agent.destination = player.position;
+            }
         }
-        // --- 2. プレイヤーが視界にいない場合の優先順位 ---
+        // 2. プレイヤーが視界にいない場合
         else
         {
-            // 追跡中だったがプレイヤーを見失った直後
+            // 攻撃中だったかもしれないので、移動停止を解除
+            agent.isStopped = false;
+
+            // 追跡中だったが見失った場合のリセット
             if (isChasing)
             {
                 isChasing = false;
@@ -77,8 +113,7 @@ public class EnemyPatrol : MonoBehaviour
                 SetRandomDestination();
             }
 
-            // A: アイテムを優先して探す・向かう
-            // A: 武器をまだ持っていないなら、最優先で武器を探す
+            // 武器を探す・拾う・巡回する（既存のロジック）
             if (!hasWeapon)
             {
                 SearchForWeapon();
@@ -92,7 +127,6 @@ public class EnemyPatrol : MonoBehaviour
                     EquipWeapon();
                 }
             }
-            // B: 音の調査（アイテム取得後のみ機能）
             else if (isInvestigating)
             {
                 if (!agent.pathPending && agent.remainingDistance < 0.5f)
@@ -100,13 +134,11 @@ public class EnemyPatrol : MonoBehaviour
                     StartCoroutine(InvestigateAndResume());
                 }
             }
-            // C: 通常散策
             else if (!agent.pathPending && agent.remainingDistance < 0.5f && !isWaiting)
             {
                 StartCoroutine(WaitAndMove());
             }
         }
-
     }
 
     // アイテムを探すメソッド
@@ -158,6 +190,7 @@ public class EnemyPatrol : MonoBehaviour
         Destroy(targetWeapon.gameObject);
         targetWeapon = null;
         isHeadingToWeapon = false;
+        agent.isStopped = false;
         StartCoroutine(InvestigateAndResume());
     }
 
@@ -250,6 +283,15 @@ public class EnemyPatrol : MonoBehaviour
         if (NavMesh.SamplePosition(randomDirection, out hit, walkRadius, 1))
         {
             agent.destination = hit.position;
+        }
+    }
+
+    void Attack()
+    {
+        lastAttackTime = Time.time;
+        if (anim != null)
+        {
+            anim.SetTrigger("Attack");
         }
     }
 }

@@ -36,4 +36,56 @@ public class EnemyEquipment : MonoBehaviour
             if (defaultWeapon) defaultWeapon.SetActive(true);
         }
     }
+
+    public void OnAttackStart(int active)
+    {
+        bool isActive = (active == 1);
+
+        // 現在アクティブ（表示中）な武器を探して判定を切り替える
+        GameObject currentWeapon = GetActiveWeapon();
+
+        if (currentWeapon != null)
+        {
+            EnemyWeapon weaponScript = currentWeapon.GetComponent<EnemyWeapon>();
+            if (weaponScript != null)
+            {
+                weaponScript.SetAttackActive(isActive);
+            }
+            else
+            {
+                Debug.LogWarning(currentWeapon.name + " に EnemyWeapon スクリプトが付いていません！");
+            }
+        }
+    }
+
+    public void OnAttackEnd(int active)
+    {
+        bool isActive = (active == 1);
+
+        // すべての武器に対して安全に判定をオフにする
+        DeactivateWeaponHit(swordModel, isActive);
+        DeactivateWeaponHit(axeModel, isActive);
+        DeactivateWeaponHit(hammerModel, isActive);
+        DeactivateWeaponHit(defaultWeapon, isActive);
+    }
+
+    // --- 便利機能：現在表示されている武器を返す ---
+    private GameObject GetActiveWeapon()
+    {
+        if (swordModel != null && swordModel.activeSelf) return swordModel;
+        if (axeModel != null && axeModel.activeSelf) return axeModel;
+        if (hammerModel != null && hammerModel.activeSelf) return hammerModel;
+        if (defaultWeapon != null && defaultWeapon.activeSelf) return defaultWeapon;
+        return null;
+    }
+
+    // --- 便利機能：安全にスクリプトを叩く ---
+    private void DeactivateWeaponHit(GameObject model, bool active)
+    {
+        if (model != null)
+        {
+            EnemyWeapon script = model.GetComponent<EnemyWeapon>();
+            if (script != null) script.SetAttackActive(active);
+        }
+    }
 }
