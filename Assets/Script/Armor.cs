@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 using UnityEngine;
 
 // プレイヤー用アーマー & アーマーPickup 兼用
@@ -60,5 +61,23 @@ public class Armor : MonoBehaviour
                 Destroy(gameObject);
             }
         }
+=======
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Armor : MonoBehaviour
+{
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+>>>>>>> main
     }
 }
