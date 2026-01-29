@@ -1,28 +1,49 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // TextMeshProを使う場合
+using TMPro;
 
 public class HUDManager : MonoBehaviour
 {
-    
+    [Header("HP UI")]
     public Slider hpSlider;
-    public TextMeshProUGUI weaponText; // 普通のTextを使う場合は "Text" に変更
 
-    // HP更新処理（PlayerHealthから呼ぶ）
+    [Header("Armor UI")]
+    public Slider armorSlider; // 追加: アーマーバー
+
+    [Header("Weapon UI")]
+    public TextMeshProUGUI weaponText;
+
     public void UpdateHP(float current, float max)
     {
         if (hpSlider != null)
         {
-            hpSlider.value = current / max; // 0.0〜1.0の割合にする
+            hpSlider.value = current / max;
         }
     }
 
-    // 武器名更新処理（Pickupから呼ぶ）
+    // --- 追加: アーマー更新処理 ---
+    public void UpdateArmor(int current, int max)
+    {
+        if (armorSlider == null) return;
+
+        // アーマーが0以下ならバーを隠す
+        if (current <= 0)
+        {
+            armorSlider.gameObject.SetActive(false);
+        }
+        else
+        {
+            // アーマーがあるならバーを表示して値を更新
+            armorSlider.gameObject.SetActive(true);
+            armorSlider.value = (float)current / max;
+        }
+    }
+    // ---------------------------
+
     public void UpdateWeapon(string name)
     {
         if (weaponText != null)
         {
-            // "(Clone)" という文字が邪魔なら消す
             string cleanName = name.Replace("(Clone)", "");
             weaponText.text = cleanName;
         }
