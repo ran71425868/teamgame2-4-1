@@ -94,16 +94,23 @@ public class EnemyEquipment : MonoBehaviour
 
     public void EquipItemVisual(string itemName)
     {
-        // 全てのアイテムを一度非表示にする（必要に応じて）
-        if (chestArmorModel) chestArmorModel.SetActive(false);
-
-        // アイテム名に "Armor" が含まれていたら表示
         if (itemName.Contains("Armor"))
         {
             if (chestArmorModel)
             {
-                chestArmorModel.SetActive(true);
-                Debug.Log("アーマーを装備しました！");
+                // すでに装備済みでないかチェック（重複加算を防ぐ場合）
+                if (!chestArmorModel.activeSelf)
+                {
+                    chestArmorModel.SetActive(true);
+                    Debug.Log("アーマーを装備しました！");
+
+                    // --- 体力を増やす処理を追加 ---
+                    EnemyHealth health = GetComponent<EnemyHealth>();
+                    if (health != null)
+                    {
+                        health.AddHealth(50);
+                    }
+                }
             }
         }
     }

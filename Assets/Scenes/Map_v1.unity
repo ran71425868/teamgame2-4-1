@@ -3653,25 +3653,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4000011066351628, guid: 36b4cee33c5a95b4fa7f0ae6bdb49564, type: 3}
   m_PrefabInstance: {fileID: 281545494}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &297509071 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 44869405154112555, guid: fe14bcbd7fc01eb4dab771b8b060910f, type: 3}
-  m_PrefabInstance: {fileID: 1525764427}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &297509079
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 297509071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29a1c95c7119b264ebd52cba44fdb7df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damage: 10
-  active: 0
 --- !u!1 &298805986 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1121434152644462892, guid: e39f50de20c524f858b8a2a10fb7f1c6, type: 3}
@@ -31249,6 +31230,10 @@ PrefabInstance:
     serializedVersion: 2
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 6794235510787872320, guid: 32141291740859844b7c31e78e04b963, type: 3}
+      propertyPath: m_Constraints
+      value: 126
+      objectReference: {fileID: 0}
     - target: {fileID: 7091375093813292565, guid: 32141291740859844b7c31e78e04b963, type: 3}
       propertyPath: m_Name
       value: Armor
