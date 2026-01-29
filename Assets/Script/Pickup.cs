@@ -12,10 +12,13 @@ public class Pickup : MonoBehaviour
     [Header("Equip Settings")]
     public Transform handPoint;       // 武器を持たせる位置
     private GameObject currentItem;   // 現在装備中のアイテム
-
+    Armor  Playerarmor;
     // --- 追加: 今見ているアイテムを覚えておく変数 ---
     private WeaponItem currentTargetItem;
-
+     void Start()
+    {
+        Playerarmor = GetComponent<Armor>();
+    }
     void Update()
     {
         // 常に視線の先をチェックする
@@ -30,6 +33,14 @@ public class Pickup : MonoBehaviour
                 currentTargetItem = null; // 拾ったらターゲットを空にする
             }
         }
+    }
+    void TryPickup()
+    {
+        Ray ray = new Ray(
+            fpsCamera.transform.position,
+            fpsCamera.transform.forward
+        );
+
     }
 
     // --- 変更: Rayを常に飛ばしてUIを制御する ---
@@ -62,6 +73,35 @@ public class Pickup : MonoBehaviour
         {
             currentTargetItem.OnLookExit(); // UIを消す
             currentTargetItem = null;
+
+        }
+
+        if (Physics.Raycast(ray, out  hit, pickupDistance))
+        {
+            // ======================
+            // 武器チェック
+            // ======================
+            WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
+            if (weapon != null)
+            {
+                weapon.Pickup(this);
+                return;
+            }
+
+            // ======================
+            // アーマーチェック
+            // ======================
+            Armor armorPickup =
+                hit.collider.GetComponentInParent<Armor>();
+
+            if (armorPickup != null && armorPickup.isPickup)
+            {
+                if (Playerarmor != null && Playerarmor.isPlayer)
+                {
+                    Playerarmor.EquipArmor(armorPickup.armorValue);
+                    Destroy(armorPickup.gameObject);
+                }
+            }
         }
     }
 
