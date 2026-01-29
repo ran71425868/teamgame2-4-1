@@ -28,23 +28,22 @@ public class PlayerHealth : MonoBehaviour
     // ダメージを受ける関数（外部から呼び出す）
     public void TakeDamage(float amount)
     {
-        if (isDead) return; // すでに死んでいたら何もしない
-        float damage = amount;
+        if (isDead) return;
 
-        // アーマーがあれば先に吸収
-      
-        if (armor != null && armor.isPlayer)
+        int damage = Mathf.RoundToInt(amount);
+
+        // アーマーで先に吸収
+        if (armor != null)
         {
-            damage = armor.AbsorbDamage(Mathf.RoundToInt(damage));
+            damage = armor.AbsorbDamage(damage);
         }
 
-        // 残ったダメージだけHPへ
+        // 残りをHPへ
         if (damage > 0)
         {
             currentHealth -= damage;
-            Debug.Log("HPダメージ: " + damage + " / 現在HP: " + currentHealth);
+            Debug.Log("HP : " + currentHealth);
         }
-      
 
         if (currentHealth <= 0)
         {

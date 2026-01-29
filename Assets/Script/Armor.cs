@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using UnityEngine;
 
 // プレイヤー用アーマー & アーマーPickup 兼用
@@ -45,39 +44,5 @@ public class Armor : MonoBehaviour
     // Pickup側処理
     // =========================
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (!isPickup) return;
-
-        if (other.CompareTag("Player"))
-        {
-            Armor playerArmor =
-                other.GetComponent<Armor>();
-
-            if (playerArmor != null && playerArmor.isPlayer)
-            {
-                // 今のアーマーを上書き装備
-                playerArmor.EquipArmor(armorValue);
-                Destroy(gameObject);
-            }
-        }
-=======
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class Armor : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
->>>>>>> main
-    }
+  
 }
