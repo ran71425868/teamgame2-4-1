@@ -13,8 +13,8 @@ public class Player : MonoBehaviour
     private float soundTimer = 0f;
 
     private CharacterController controller;
-    private Vector3 velocity;// 垂直方向の速度（重力用）
-    private bool isGrounded;         // 地面に接しているか
+    private Vector3 velocity; // 垂直方向の速度（重力用）
+    private bool isGrounded;          // 地面に接しているか
     private bool wasGrounded;         // 前のフレームで地面にいたか（着地判定用）
 
     //音
@@ -23,10 +23,22 @@ public class Player : MonoBehaviour
     public AudioClip jumpSound;        // ジャンプ時のSE
     public AudioClip landSound;        // 着地時のSE
 
+    // --- 追加: アニメーター ---
+    private Animator animator;
+
     void Start()
     {
         controller = GetComponent<CharacterController>();
         footstepSource = GetComponent<AudioSource>();
+
+        // --- 追加: アニメーターの取得 ---
+        // プレイヤー直下にAnimatorがある場合と、3Dモデル(子)にある場合の両方に対応
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+
         wasGrounded = true;
     }
 
@@ -34,6 +46,12 @@ public class Player : MonoBehaviour
     {
         // --- 地面判定 ---
         isGrounded = controller.isGrounded;
+
+        // --- 追加: アニメーターに接地状態を伝える ---
+        if (animator != null)
+        {
+            animator.SetBool("IsGrounded", isGrounded);
+        }
 
         // --- 着地処理 ---
         if (!wasGrounded && isGrounded)
@@ -58,7 +76,6 @@ public class Player : MonoBehaviour
         float currentSpeed = isShifting ? walkSpeed : runSpeed;
 
         // --- WASD入力の取得 ---
-        // GetAxisを使わず、直接キーを指定することで矢印キーを無効化します
         float moveX = 0;
         float moveZ = 0;
 
@@ -69,6 +86,19 @@ public class Player : MonoBehaviour
 
         // 斜め移動で速くならないように正規化(Normalize)
         Vector3 inputDir = new Vector3(moveX, 0, moveZ).normalized;
+
+        // --- 追加: アニメーターに速度を伝える ---
+        if (animator != null)
+        {
+            // inputDir.x は左右(-1 ~ 1)、inputDir.z は前後(-1 ~ 1)
+            // これに currentSpeed (3 または 7) を掛けることで、「歩き」と「走り」を区別します
+            float animX = inputDir.x * currentSpeed;
+            float animZ = inputDir.z * currentSpeed;
+
+            // Animatorのパラメータ "InputX" と "InputZ" に渡す
+            animator.SetFloat("InputX", animX, 0.1f, Time.deltaTime);
+            animator.SetFloat("InputZ", animZ, 0.1f, Time.deltaTime);
+        }
 
         // --- 移動計算 ---
         // transform.right と transform.forward を使うことで、
@@ -97,6 +127,7 @@ public class Player : MonoBehaviour
         {
             velocity.y = -2f; // 地面に吸い付かせる
         }
+
         // --- ジャンプ処理 ---
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
@@ -107,6 +138,12 @@ public class Player : MonoBehaviour
 
             // ジャンプ音を周囲の敵に通知（範囲は足音と同じ15f）
             NotifyEnemyOfAction(transform.position, 15f);
+
+            // --- 追加: アニメーターにジャンプトリガーを送る ---
+            if (animator != null)
+            {
+                animator.SetTrigger("Jump");
+            }
         }
 
         // --- 重力の適用 ---

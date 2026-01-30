@@ -993,7 +993,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3074747676536841576, guid: 72632788486754f8caaf97b85bf5dbf6, type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3074747676536841576, guid: 72632788486754f8caaf97b85bf5dbf6, type: 3}
       propertyPath: m_LocalPosition.x
@@ -17921,8 +17921,8 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
+  MinDistance: 0
+  MaxDistance: 30
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -18031,8 +18031,8 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
+  MinDistance: 0
+  MaxDistance: 20
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -18107,7 +18107,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!54 &1251883966
+--- !u!54 &1251883973
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20142,7 +20142,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2189165697742768765, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2189165697742768765, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
       propertyPath: m_LocalPosition.x
@@ -20182,6 +20182,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2189165697742768765, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5224551939979628551, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: d283c1f1f33e1c84b9be4693c76c0957, type: 2}
+    - target: {fileID: 5224551939979628551, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
+      propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5282603194146942290, guid: 889d24f8fc349cf45b463fb9b13b0143, type: 3}
@@ -21516,7 +21524,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 710568517720797002, guid: fe14bcbd7fc01eb4dab771b8b060910f, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9071816717626629601, guid: fe14bcbd7fc01eb4dab771b8b060910f, type: 3}
       propertyPath: m_Name
@@ -25107,6 +25115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   isDead: 0
+  hudManager: {fileID: 0}
 --- !u!82 &1755887304
 AudioSource:
   m_ObjectHideFlags: 0
