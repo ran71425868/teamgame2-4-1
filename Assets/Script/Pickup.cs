@@ -20,10 +20,23 @@ public class Pickup : MonoBehaviour
     private WeaponItem currentTargetItem;
     private Armor currentTargetArmor;
 
+    // --- 追加: 音声設定 ---
+    [Header("Sound Settings")]
+    public AudioClip weaponPickupSound; // 武器を拾った時の音
+    public AudioClip armorPickupSound;  // アーマーを拾った時の音
+    public AudioSource audioSource;     // 音を鳴らすスピーカー
+    // ---------------------
+
     void Start()
     {
         Playerarmor = GetComponent<Armor>();
         hudManager = FindObjectOfType<HUDManager>();
+
+        // --- 追加: AudioSourceが設定されていなければ自動取得 ---
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
     void Update()
@@ -88,6 +101,13 @@ public class Pickup : MonoBehaviour
                 {
                     if (Playerarmor != null)
                     {
+                        // --- 追加: アーマー取得音を再生 ---
+                        if (audioSource != null && armorPickupSound != null)
+                        {
+                            audioSource.PlayOneShot(armorPickupSound);
+                        }
+                        // ------------------------------
+
                         Playerarmor.EquipArmor(armor.armorValue);
                         Destroy(armor.gameObject);
                         currentTargetArmor = null;
@@ -98,6 +118,13 @@ public class Pickup : MonoBehaviour
                 WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
                 if (weapon != null)
                 {
+                    // --- 追加: 武器取得音を再生 ---
+                    if (audioSource != null && weaponPickupSound != null)
+                    {
+                        audioSource.PlayOneShot(weaponPickupSound);
+                    }
+                    // ---------------------------
+
                     weapon.Pickup(this);
                     currentTargetItem = null;
                     return;
@@ -106,7 +133,7 @@ public class Pickup : MonoBehaviour
         }
     }
 
-    // ★修正: ドロップ処理を追加した装備関数
+    // ドロップ処理を追加した装備関数
     public void EquipItem(GameObject equipPrefab)
     {
         if (equipPrefab == null) return;

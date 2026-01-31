@@ -12,6 +12,12 @@ public class PlayerHealth : MonoBehaviour
     private Armor armor;
     public HUDManager hudManager;
 
+    // --- 音声用の変数を追加 ---
+    [Header("音声設定")]
+    public AudioClip damageSound; // aegi.wav
+    public AudioSource audioSource; // 効果音用スピーカー
+    // -------------------------
+
     void Start()
     {
         // ゲーム開始時に体力を全回復
@@ -20,6 +26,11 @@ public class PlayerHealth : MonoBehaviour
 
         if (hudManager != null) hudManager.UpdateHP(currentHealth, maxHealth);
 
+        // AudioSourceが空なら自動取得
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
     void Update()
@@ -35,6 +46,16 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead) return;
 
+        // ★修正ポイント: ダメージ計算の前に音を鳴らす
+        // これで「アーマーで0になっても」「HPが減っても」関係なく、攻撃を受ければ音が鳴ります
+        if (amount > 0)
+        {
+            if (damageSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(damageSound);
+            }
+        }
+
         int damage = Mathf.RoundToInt(amount);
 
         // アーマーで先に吸収
@@ -49,6 +70,7 @@ public class PlayerHealth : MonoBehaviour
             currentHealth -= damage;
             Debug.Log("HP : " + currentHealth);
         }
+
         if (hudManager != null) hudManager.UpdateHP(currentHealth, maxHealth);
         if (currentHealth <= 0)
         {
@@ -63,7 +85,6 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log("プレイヤーが死亡しました");
 
         // ここで死亡時のアクションを実行
-        // 例: 画面を赤くする、リロードする、入力を無効化するなど
         DisableControls();
     }
 
