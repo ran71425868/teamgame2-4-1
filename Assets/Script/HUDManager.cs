@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
+// using TMPro; // テキストを使わないならこの行は不要になります
 
 public class HUDManager : MonoBehaviour
 {
@@ -8,10 +8,12 @@ public class HUDManager : MonoBehaviour
     public Slider hpSlider;
 
     [Header("Armor UI")]
-    public Slider armorSlider; // 追加: アーマーバー
+    public Slider armorSlider;
+
+    // public TextMeshProUGUI weaponText; // ← この変数を削除しました
 
     [Header("Weapon UI")]
-    public TextMeshProUGUI weaponText;
+    public Image weaponIcon;           // アイコン表示用のImage
 
     public void UpdateHP(float current, float max)
     {
@@ -21,31 +23,40 @@ public class HUDManager : MonoBehaviour
         }
     }
 
-    // --- 追加: アーマー更新処理 ---
     public void UpdateArmor(int current, int max)
     {
         if (armorSlider == null) return;
 
-        // アーマーが0以下ならバーを隠す
         if (current <= 0)
         {
             armorSlider.gameObject.SetActive(false);
         }
         else
         {
-            // アーマーがあるならバーを表示して値を更新
             armorSlider.gameObject.SetActive(true);
             armorSlider.value = (float)current / max;
         }
     }
-    // ---------------------------
 
+    // ★重要: 関数自体を消すと、これを呼んでいる場所でエラーになるので、
+    // 関数は残しておいて「中身だけ」空にします。
     public void UpdateWeapon(string name)
     {
-        if (weaponText != null)
+        // テキスト表示機能は削除したので何もしない
+    }
+
+    public void UpdateWeaponIcon(Sprite icon)
+    {
+        if (weaponIcon == null) return;
+
+        if (icon != null)
         {
-            string cleanName = name.Replace("(Clone)", "");
-            weaponText.text = cleanName;
+            weaponIcon.sprite = icon;
+            weaponIcon.gameObject.SetActive(true);
+        }
+        else
+        {
+            weaponIcon.gameObject.SetActive(false);
         }
     }
 }

@@ -14,18 +14,20 @@ public class Pickup : MonoBehaviour
     private GameObject currentItem;
     Armor Playerarmor;
 
+    // HUDManagerへの参照
+    private HUDManager hudManager;
+
     private WeaponItem currentTargetItem;
-    // --- 追加: 今見ているアーマーを覚えておく変数 ---
     private Armor currentTargetArmor;
 
     void Start()
     {
         Playerarmor = GetComponent<Armor>();
+        hudManager = FindObjectOfType<HUDManager>();
     }
 
     void Update()
     {
-        // 常に視線の先をチェック（UIの表示・非表示もここ）
         CheckObjectInSight();
     }
 
@@ -36,48 +38,44 @@ public class Pickup : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, pickupDistance))
         {
-            // --- 武器のチェック ---
+            // 武器のチェック
             WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
             if (weapon != null)
             {
                 if (currentTargetItem != weapon)
                 {
-                    ClearCurrentTarget(); // 他のターゲットを一旦クリア
+                    ClearCurrentTarget();
                     currentTargetItem = weapon;
                     currentTargetItem.OnLookEnter();
                 }
-                HandlePickupInput(ray); // 視線が合っている間、入力を受け付ける
+                HandlePickupInput(ray);
                 return;
             }
 
-            // --- アーマーのチェック ---
+            // アーマーのチェック
             Armor armor = hit.collider.GetComponentInParent<Armor>();
             if (armor != null && armor.isPickup)
             {
                 if (currentTargetArmor != armor)
                 {
-                    ClearCurrentTarget(); // 他のターゲットを一旦クリア
+                    ClearCurrentTarget();
                     currentTargetArmor = armor;
                     currentTargetArmor.OnLookEnter();
                 }
-                HandlePickupInput(ray); // 視線が合っている間、入力を受け付ける
+                HandlePickupInput(ray);
                 return;
             }
         }
 
-        // 何も見ていない時はUIを消す
         ClearCurrentTarget();
     }
 
-    // 全てのターゲットのUIを消して変数をリセットする関数
     void ClearCurrentTarget()
     {
         if (currentTargetItem != null) { currentTargetItem.OnLookExit(); currentTargetItem = null; }
         if (currentTargetArmor != null) { currentTargetArmor.OnLookExit(); currentTargetArmor = null; }
     }
 
-    // --- 追加: 実際の「拾う」入力判定 ---
-    // Pickup.cs の HandlePickupInput 内
     void HandlePickupInput(Ray ray)
     {
         if (Input.GetKeyDown(pickupKey))
@@ -85,7 +83,6 @@ public class Pickup : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, pickupDistance))
             {
-                // 1. まずアーマーをチェック
                 Armor armor = hit.collider.GetComponentInParent<Armor>();
                 if (armor != null && armor.isPickup)
                 {
@@ -95,28 +92,56 @@ public class Pickup : MonoBehaviour
                         Destroy(armor.gameObject);
                         currentTargetArmor = null;
                     }
-                    return; // アーマーを拾ったらここで終了
+                    return;
                 }
 
-                // 2. アーマーでなければ武器をチェック
                 WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
                 if (weapon != null)
                 {
                     weapon.Pickup(this);
                     currentTargetItem = null;
-                    return; // 武器を拾ったらここで終了
+                    return;
                 }
             }
         }
     }
 
+    // ★修正: ドロップ処理を追加した装備関数
     public void EquipItem(GameObject equipPrefab)
     {
         if (equipPrefab == null) return;
-        if (currentItem != null) Destroy(currentItem);
+
+        // --- ドロップ処理 ---
+        if (currentItem != null)
+        {
+            // 今持っている武器の WeaponData を取得
+            WeaponData oldData = currentItem.GetComponent<WeaponData>();
+
+            // ドロップ用プレハブが設定されていれば生成
+            if (oldData != null && oldData.dropPrefab != null)
+            {
+                // プレイヤーの少し前・少し上に生成（足元に埋まらないように）
+                Vector3 dropPos = transform.position + (transform.forward * 0.5f) + (Vector3.up * 0.5f);
+                Instantiate(oldData.dropPrefab, dropPos, Quaternion.identity);
+            }
+
+            // 古い武器を削除
+            Destroy(currentItem);
+        }
+        // ------------------
+
+        // 新しい武器を生成
         currentItem = Instantiate(equipPrefab, handPoint);
         currentItem.transform.localPosition = Vector3.zero;
         currentItem.transform.localRotation = Quaternion.identity;
+
+        // アイコン更新処理
+        if (hudManager != null)
+        {
+            WeaponData data = currentItem.GetComponent<WeaponData>();
+            if (data != null) hudManager.UpdateWeaponIcon(data.icon);
+            else hudManager.UpdateWeaponIcon(null);
+        }
     }
 
     void LateUpdate()
