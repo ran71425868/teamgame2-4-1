@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement; // ★追加: シーン移動に必要
 
 public class HUDManager : MonoBehaviour
 {
@@ -13,11 +14,16 @@ public class HUDManager : MonoBehaviour
     [Header("Weapon UI")]
     public Image weaponIcon;
 
-    // ★追加: ゲーム開始時にアイコンを隠す処理
+    [Header("Game Over UI")] // ★追加
+    public GameObject gameOverUI; // 負けた時に表示するパネル全体（赤背景・文字・ボタンを含む親オブジェクト）
+
     void Awake()
     {
         if (weaponIcon != null) weaponIcon.gameObject.SetActive(false);
         if (armorIcon != null) armorIcon.gameObject.SetActive(false);
+
+        // ★追加: ゲーム開始時は負け画面を隠しておく
+        if (gameOverUI != null) gameOverUI.SetActive(false);
     }
 
     public void UpdateHP(float current, float max)
@@ -43,10 +49,8 @@ public class HUDManager : MonoBehaviour
             }
         }
 
-        // ★修正: アーマーがあっても、画像(sprite)がセットされていなければ表示しないようにする
         if (armorIcon != null)
         {
-            // 「アーマー値が0より大きい」かつ「画像が空っぽ(null)ではない」ときだけ表示
             bool shouldShow = (current > 0) && (armorIcon.sprite != null);
             armorIcon.gameObject.SetActive(shouldShow);
         }
@@ -78,5 +82,25 @@ public class HUDManager : MonoBehaviour
         {
             weaponIcon.gameObject.SetActive(false);
         }
+    }
+
+    // ★追加: 負けた時に呼び出す
+    public void ShowGameOver()
+    {
+        if (gameOverUI != null)
+        {
+            gameOverUI.SetActive(true);
+
+            // カーソルを表示してクリックできるようにする
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    // ★追加: タイトルへ戻るボタンから呼び出す
+    public void OnTitleButton()
+    {
+        // "Title" という名前のシーンへ移動します（実際のシーン名に合わせて変更してください）
+        SceneManager.LoadScene("TitleScene");
     }
 }

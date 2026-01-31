@@ -12,6 +12,16 @@ public class EnemyHealth : MonoBehaviour
         currentHealth = maxHealth;
     }
 
+    // ★追加: Rキーを押すとダメージを受ける（テスト用）
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            // 自分自身に20ダメージを与える
+            TakeDamage(20);
+        }
+    }
+
     // ダメージを受ける関数
     public void TakeDamage(int damage)
     {

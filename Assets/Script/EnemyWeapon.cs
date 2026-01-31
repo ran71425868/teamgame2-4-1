@@ -19,10 +19,21 @@ public class EnemyWeapon : MonoBehaviour
     {
         if (canDamage && other.CompareTag("Player"))
         {
-            // プレイヤーにダメージを与える処理（PlayerHealthスクリプトなどが必要）
-            Debug.Log("プレイヤーに " + damage + " ダメージ！");
+            // 1. 相手（プレイヤー）のHPスクリプトを取得する
+            PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
+
+            // 2. スクリプトがちゃんと付いていたらダメージを与える
+            if (playerHealth != null)
+            {
+                // ★ここが修正点★
+                // 第2引数に「transform.root」を渡します。
+                // これにより、剣（武器）ではなく、その親の親...である「敵本体」の情報をプレイヤーに伝えます。
+                playerHealth.TakeDamage(damage, transform.root);
+
+                Debug.Log("プレイヤーに " + damage + " ダメージ！");
+            }
+
             canDamage = false; // 1回の振りで2回当たらないようにする
         }
     }
-
 }
