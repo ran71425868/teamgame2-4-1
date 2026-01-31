@@ -281,6 +281,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   equipPrefab: {fileID: 207962844}
   pickupUI: {fileID: 1057862692}
+  uiHeightOffset: 1
 --- !u!114 &207962851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -724,6 +725,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   equipPrefab: {fileID: 398077106}
   pickupUI: {fileID: 1588534367}
+  uiHeightOffset: 1
 --- !u!65 &398077111
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -946,6 +948,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   equipPrefab: {fileID: 711790001}
   pickupUI: {fileID: 293769335}
+  uiHeightOffset: 1
 --- !u!65 &711790006
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1415,6 +1418,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   equipPrefab: {fileID: 994281475}
   pickupUI: {fileID: 1446664763}
+  uiHeightOffset: 1
 --- !u!65 &994281480
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1976,6 +1980,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   equipPrefab: {fileID: 1164608696}
   pickupUI: {fileID: 1514176051}
+  uiHeightOffset: 1
 --- !u!114 &1164608704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3877,7 +3882,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1938088566466107982, guid: 3cfc4713418924499bc31f35f36c1c3d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2
+      value: -6.26
       objectReference: {fileID: 0}
     - target: {fileID: 1938088566466107982, guid: 3cfc4713418924499bc31f35f36c1c3d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3945,6 +3950,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   equipPrefab: {fileID: 2038501895}
   pickupUI: {fileID: 895178534}
+  uiHeightOffset: 1
 --- !u!65 &2038501900
 BoxCollider:
   m_ObjectHideFlags: 0
