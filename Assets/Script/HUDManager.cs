@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class HUDManager : MonoBehaviour
 {
@@ -8,10 +7,18 @@ public class HUDManager : MonoBehaviour
     public Slider hpSlider;
 
     [Header("Armor UI")]
-    public Slider armorSlider; // 追加: アーマーバー
+    public Slider armorSlider;
+    public Image armorIcon;
 
     [Header("Weapon UI")]
-    public TextMeshProUGUI weaponText;
+    public Image weaponIcon;
+
+    // ★追加: ゲーム開始時にアイコンを隠す処理
+    void Awake()
+    {
+        if (weaponIcon != null) weaponIcon.gameObject.SetActive(false);
+        if (armorIcon != null) armorIcon.gameObject.SetActive(false);
+    }
 
     public void UpdateHP(float current, float max)
     {
@@ -21,31 +28,55 @@ public class HUDManager : MonoBehaviour
         }
     }
 
-    // --- 追加: アーマー更新処理 ---
     public void UpdateArmor(int current, int max)
     {
-        if (armorSlider == null) return;
-
-        // アーマーが0以下ならバーを隠す
-        if (current <= 0)
+        if (armorSlider != null)
         {
-            armorSlider.gameObject.SetActive(false);
+            if (current <= 0)
+            {
+                armorSlider.gameObject.SetActive(false);
+            }
+            else
+            {
+                armorSlider.gameObject.SetActive(true);
+                armorSlider.value = (float)current / max;
+            }
         }
-        else
+
+        // ★修正: アーマーがあっても、画像(sprite)がセットされていなければ表示しないようにする
+        if (armorIcon != null)
         {
-            // アーマーがあるならバーを表示して値を更新
-            armorSlider.gameObject.SetActive(true);
-            armorSlider.value = (float)current / max;
+            // 「アーマー値が0より大きい」かつ「画像が空っぽ(null)ではない」ときだけ表示
+            bool shouldShow = (current > 0) && (armorIcon.sprite != null);
+            armorIcon.gameObject.SetActive(shouldShow);
         }
     }
-    // ---------------------------
+
+    public void SetArmorIcon(Sprite icon)
+    {
+        if (armorIcon != null && icon != null)
+        {
+            armorIcon.sprite = icon;
+        }
+    }
 
     public void UpdateWeapon(string name)
     {
-        if (weaponText != null)
+        // 処理なし
+    }
+
+    public void UpdateWeaponIcon(Sprite icon)
+    {
+        if (weaponIcon == null) return;
+
+        if (icon != null)
         {
-            string cleanName = name.Replace("(Clone)", "");
-            weaponText.text = cleanName;
+            weaponIcon.sprite = icon;
+            weaponIcon.gameObject.SetActive(true);
+        }
+        else
+        {
+            weaponIcon.gameObject.SetActive(false);
         }
     }
 }
