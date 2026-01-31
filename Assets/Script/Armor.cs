@@ -9,7 +9,7 @@ public class Armor : MonoBehaviour
 
     [Header("Pickup Settings")]
     public float pickupRange = 3.0f; // 拾える距離
-
+    public Sprite armorSprite;
     [Header("Armor Value")]
     public int maxArmor = 0;        // 最大アーマー
     public int currentArmor = 0;    // 現在のアーマー
@@ -48,6 +48,7 @@ public class Armor : MonoBehaviour
         // ゲーム開始時にUIをリセット（プレイヤーの場合のみ）
         if (isPlayer && hudManager != null)
         {
+            if (armorSprite != null) hudManager.SetArmorIcon(armorSprite);
             hudManager.UpdateArmor(currentArmor, maxArmor);
         }
     }
@@ -60,7 +61,7 @@ public class Armor : MonoBehaviour
         if (playerArmor != null && playerArmor.isPlayer)
         {
             // プレイヤーに装備させる
-            playerArmor.EquipArmor(armorValue);
+            playerArmor.EquipArmor(armorValue, armorSprite);
 
             // フィールド上のアーマーを消す
             Destroy(gameObject);
@@ -72,13 +73,18 @@ public class Armor : MonoBehaviour
     // =========================
 
     // アーマーを装備（着替え）
-    public void EquipArmor(int value)
+    public void EquipArmor(int value, Sprite icon = null)
     {
         maxArmor = value;
         currentArmor = value;
 
         Debug.Log("Armor Equipped : " + value);
-        if (hudManager != null) hudManager.UpdateArmor(currentArmor, maxArmor);
+        if (hudManager != null)
+        {
+            // ★追加: アイコンを更新してからスライダー等を更新
+            if (icon != null) hudManager.SetArmorIcon(icon);
+            hudManager.UpdateArmor(currentArmor, maxArmor);
+        }
     }
 
     // ダメージを吸収して、残りダメージを返す
