@@ -26,7 +26,9 @@ ModelImporter:
       might lower retargeting quality:\nNote: Activate translation DOF on avatar
       to improve retargeting quality.\n\t'neck_01' is inbetween humanoid transforms
       and has rotation animation that will be discarded.\n"
-    animationRetargetingWarnings: 
+    animationRetargetingWarnings: "\nRetargeting quality report for clip 'mixamo.com':\n\tHead
+      average position error 4.4 mm and maximum position error 7.8 mm at time 0:
+      7 (28.0%) Frame 7\n"
     animationDoRetargetingWarnings: 1
     importAnimatedCustomProperties: 0
     importConstraints: 0
