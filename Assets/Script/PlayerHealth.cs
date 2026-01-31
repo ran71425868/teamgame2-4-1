@@ -8,25 +8,21 @@ public class PlayerHealth : MonoBehaviour
     public float maxHealth = 100f;
     private float currentHealth;
 
-    public bool isDead = false; // 死亡フラグ
+    public bool isDead = false;
     private Armor armor;
     public HUDManager hudManager;
 
-    // --- 音声用の変数を追加 ---
     [Header("音声設定")]
-    public AudioClip damageSound; // aegi.wav
-    public AudioSource audioSource; // 効果音用スピーカー
-    // -------------------------
+    public AudioClip damageSound;
+    public AudioSource audioSource;
 
     void Start()
     {
-        // ゲーム開始時に体力を全回復
         currentHealth = maxHealth;
         armor = GetComponent<Armor>();
 
         if (hudManager != null) hudManager.UpdateHP(currentHealth, maxHealth);
 
-        // AudioSourceが空なら自動取得
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -37,17 +33,15 @@ public class PlayerHealth : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.G))
         {
-            TakeDamage(10f);
+            TakeDamage(10f); // テスト用
         }
     }
 
-    // ダメージを受ける関数（外部から呼び出す）
-    public void TakeDamage(float amount)
+    // 引数に attacker を追加（前回の変更点）
+    public void TakeDamage(float amount, Transform attacker = null)
     {
         if (isDead) return;
 
-        // ★修正ポイント: ダメージ計算の前に音を鳴らす
-        // これで「アーマーで0になっても」「HPが減っても」関係なく、攻撃を受ければ音が鳴ります
         if (amount > 0)
         {
             if (damageSound != null && audioSource != null)
@@ -58,13 +52,11 @@ public class PlayerHealth : MonoBehaviour
 
         int damage = Mathf.RoundToInt(amount);
 
-        // アーマーで先に吸収
         if (armor != null)
         {
             damage = armor.AbsorbDamage(damage);
         }
 
-        // 残りをHPへ
         if (damage > 0)
         {
             currentHealth -= damage;
@@ -72,39 +64,76 @@ public class PlayerHealth : MonoBehaviour
         }
 
         if (hudManager != null) hudManager.UpdateHP(currentHealth, maxHealth);
+
         if (currentHealth <= 0)
         {
-            Die();
+            // 死亡処理に攻撃者を渡す
+            Die(attacker);
         }
     }
 
-    // 死亡処理
-    void Die()
+    void Die(Transform killer)
     {
         isDead = true;
         Debug.Log("プレイヤーが死亡しました");
 
-        // ここで死亡時のアクションを実行
         DisableControls();
+
+        // 1. 敵視点カメラ（観戦モード）
+        StartSpectatorMode(killer);
+
+        // 2. 負けUI（赤画面・LOSE・ボタン）を表示
+        if (hudManager != null)
+        {
+            hudManager.ShowGameOver();
+        }
     }
 
-    // 死亡した時に入力を止める
     void DisableControls()
     {
-        // 移動スクリプトを止める
         if (TryGetComponent<Player>(out Player movement))
         {
             movement.enabled = false;
         }
 
-        // カメラ（回転）スクリプトを止める
         if (TryGetComponent<FPSCameraController>(out FPSCameraController cameraControl))
         {
             cameraControl.enabled = false;
         }
 
-        // マウスカーソルを表示する
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        // カーソル制御はHUDManager側でShowGameOver時に行うので、ここはコメントアウトでも良いが、念のため残してもOK
+        // Cursor.lockState = CursorLockMode.None;
+        // Cursor.visible = true;
+    }
+
+    void StartSpectatorMode(Transform target)
+    {
+        if (target == null)
+        {
+            EnemyPatrol randomEnemy = FindObjectOfType<EnemyPatrol>();
+            if (randomEnemy != null) target = randomEnemy.transform;
+        }
+
+        if (target != null)
+        {
+            FPSCameraController camControl = GetComponent<FPSCameraController>();
+            Transform mainCamera = null;
+
+            if (camControl != null && camControl.cameraTransform != null)
+            {
+                mainCamera = camControl.cameraTransform;
+            }
+            else if (Camera.main != null)
+            {
+                mainCamera = Camera.main.transform;
+            }
+
+            if (mainCamera != null)
+            {
+                mainCamera.SetParent(target);
+                mainCamera.localPosition = new Vector3(0f, 2.5f, -4.0f);
+                mainCamera.LookAt(target.position + Vector3.up * 1.5f);
+            }
+        }
     }
 }
