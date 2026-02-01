@@ -11,17 +11,14 @@ public class Pickup : MonoBehaviour
 
     [Header("Equip Settings")]
     public Transform handPoint;    // カメラの下にある武器ホルダー
-    public Transform handSocket;   // ★追加: 右手ボーンの下に作った武器ソケット
+    public Transform handSocket;   // 右手ボーンの下に作った武器ソケット
 
-    // ★変更: 2つの武器を管理するように変更
+    // 2つの武器を管理
     private GameObject currentCameraItem; // カメラ用
     private GameObject currentHandItem;   // 手用
 
     Armor Playerarmor;
-
-    // HUDManagerへの参照
     private HUDManager hudManager;
-
     private WeaponItem currentTargetItem;
     private Armor currentTargetArmor;
 
@@ -34,11 +31,7 @@ public class Pickup : MonoBehaviour
     {
         Playerarmor = GetComponent<Armor>();
         hudManager = FindObjectOfType<HUDManager>();
-
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -46,6 +39,7 @@ public class Pickup : MonoBehaviour
         CheckObjectInSight();
     }
 
+    // (視線判定のコードは変更なしのため省略します...元のままにしてください)
     void CheckObjectInSight()
     {
         Ray ray = new Ray(fpsCamera.transform.position, fpsCamera.transform.forward);
@@ -53,7 +47,6 @@ public class Pickup : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, pickupDistance))
         {
-            // 武器のチェック
             WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
             if (weapon != null)
             {
@@ -66,8 +59,7 @@ public class Pickup : MonoBehaviour
                 HandlePickupInput(ray);
                 return;
             }
-
-            // アーマーのチェック
+            // Armor処理...
             Armor armor = hit.collider.GetComponentInParent<Armor>();
             if (armor != null && armor.isPickup)
             {
@@ -81,7 +73,6 @@ public class Pickup : MonoBehaviour
                 return;
             }
         }
-
         ClearCurrentTarget();
     }
 
@@ -98,16 +89,13 @@ public class Pickup : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, pickupDistance))
             {
+                // Armor処理...
                 Armor armor = hit.collider.GetComponentInParent<Armor>();
                 if (armor != null && armor.isPickup)
                 {
                     if (Playerarmor != null)
                     {
-                        if (audioSource != null && armorPickupSound != null)
-                        {
-                            audioSource.PlayOneShot(armorPickupSound);
-                        }
-
+                        if (audioSource != null && armorPickupSound != null) audioSource.PlayOneShot(armorPickupSound);
                         Playerarmor.EquipArmor(armor.armorValue);
                         Destroy(armor.gameObject);
                         currentTargetArmor = null;
@@ -115,14 +103,11 @@ public class Pickup : MonoBehaviour
                     return;
                 }
 
+                // 武器処理
                 WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
                 if (weapon != null)
                 {
-                    if (audioSource != null && weaponPickupSound != null)
-                    {
-                        audioSource.PlayOneShot(weaponPickupSound);
-                    }
-
+                    if (audioSource != null && weaponPickupSound != null) audioSource.PlayOneShot(weaponPickupSound);
                     weapon.Pickup(this);
                     currentTargetItem = null;
                     return;
@@ -131,19 +116,28 @@ public class Pickup : MonoBehaviour
         }
     }
 
-    // ★修正: 2つの武器を生成してPlayerに登録する処理
+    // ★★★ ここを修正！確実にPlayerへ情報を渡す ★★★
     public void EquipItem(GameObject equipPrefab)
     {
-        if (equipPrefab == null)
+        if (equipPrefab == null) return;
+
+        // Playerを探しておく
+        Player player = GetComponentInParent<Player>();
+        if (player == null)
         {
-            Debug.LogError("エラー: Equip Prefab が設定されていません！");
+            Debug.LogError("エラー: Playerスクリプトが見つかりません！");
             return;
         }
 
-        // --- 古い武器のドロップと削除 ---
+        // --- 1. 古い武器の削除とリセット ---
+        // 先にPlayer側の参照を空にしておく（Missing回避）
+        player.weaponScript = null;
+        player.currentCameraWeapon = null;
+        player.currentHandWeapon = null;
+
         if (currentCameraItem != null)
         {
-            // ドロップ品生成は片方（カメラ用）から情報を取ればOK
+            // ドロップ品生成
             WeaponData oldData = currentCameraItem.GetComponent<WeaponData>();
             if (oldData != null && oldData.dropPrefab != null)
             {
@@ -156,56 +150,55 @@ public class Pickup : MonoBehaviour
         {
             Destroy(currentHandItem);
         }
-        // -----------------------------
 
-        // 1. カメラ用の武器を生成（普段見える用）
+        // --- 2. カメラ用武器の生成 ---
         currentCameraItem = Instantiate(equipPrefab, handPoint);
         currentCameraItem.transform.localPosition = Vector3.zero;
         currentCameraItem.transform.localRotation = Quaternion.identity;
 
-        // カメラ用の武器は、スクリプトや当たり判定を無効化しておく（手元のが判定を持つため）
-        WeaponController camCtrl = currentCameraItem.GetComponent<WeaponController>();
-        if (camCtrl != null) camCtrl.enabled = false;
-        Collider col = currentCameraItem.GetComponent<Collider>();
-        if (col != null) col.enabled = false;
+        // カメラ用はスクリプト無効化
+        var camCtrl = currentCameraItem.GetComponent<WeaponController>();
+        if (camCtrl) camCtrl.enabled = false;
+        var camCol = currentCameraItem.GetComponent<Collider>();
+        if (camCol) camCol.enabled = false;
 
-        // 2. 手用の武器を生成（攻撃用・普段は見えない）
+        // --- 3. 手用武器の生成 ---
         if (handSocket != null)
         {
             currentHandItem = Instantiate(equipPrefab, handSocket);
             currentHandItem.transform.localPosition = Vector3.zero;
             currentHandItem.transform.localRotation = Quaternion.identity;
-
-            // 最初は非表示
-            currentHandItem.SetActive(false);
+            currentHandItem.SetActive(false); // 即座に隠す
         }
         else
         {
-            Debug.LogError("Pickupスクリプトの 'Hand Socket' が設定されていません！");
+            Debug.LogError("エラー: Hand Socket が設定されていません！");
+            return;
         }
 
-        // 3. Playerスクリプトに登録
-        // 攻撃判定を行うのは「手の武器」の方のコントローラー
-        if (currentHandItem != null)
+        // --- 4. 新しい武器情報をPlayerに登録 ---
+        // WeaponControllerを探す（子オブジェクトも含めて探すように強化）
+        WeaponController handCtrl = currentHandItem.GetComponent<WeaponController>();
+        if (handCtrl == null)
         {
-            WeaponController handCtrl = currentHandItem.GetComponent<WeaponController>();
-            if (handCtrl != null)
-            {
-                handCtrl.Setup(true);
+            handCtrl = currentHandItem.GetComponentInChildren<WeaponController>();
+        }
 
-                Player player = GetComponentInParent<Player>();
-                if (player != null)
-                {
-                    // 攻撃用スクリプトとして「手の武器」を登録
-                    player.weaponScript = handCtrl;
+        if (handCtrl != null)
+        {
+            // セットアップ
+            handCtrl.Setup(true);
 
-                    // 表示切り替え用に2つのオブジェクトを登録
-                    player.cameraWeaponObj = currentCameraItem;
-                    player.handWeaponObj = currentHandItem;
+            // ★ここで確実にPlayerに代入！
+            player.weaponScript = handCtrl;
+            player.currentCameraWeapon = currentCameraItem;
+            player.currentHandWeapon = currentHandItem;
 
-                    Debug.Log("成功: Playerに武器（カメラ用・手用）を登録しました！");
-                }
-            }
+            Debug.Log($"武器持ち替え完了: {handCtrl.name} を登録しました");
+        }
+        else
+        {
+            Debug.LogError($"エラー: 武器プレハブ {equipPrefab.name} に WeaponController がついていません！");
         }
 
         // アイコン更新
@@ -213,13 +206,11 @@ public class Pickup : MonoBehaviour
         {
             WeaponData data = currentCameraItem.GetComponent<WeaponData>();
             if (data != null) hudManager.UpdateWeaponIcon(data.icon);
-            else hudManager.UpdateWeaponIcon(null);
         }
     }
 
     void LateUpdate()
     {
-        // カメラ用の武器だけ位置を強制リセット（手の武器はボーンについていくので不要）
         if (currentCameraItem != null)
         {
             currentCameraItem.transform.localPosition = Vector3.zero;

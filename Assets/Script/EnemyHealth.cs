@@ -36,28 +36,37 @@ public class EnemyHealth : MonoBehaviour
 
     void Die()
     {
-        Debug.Log("敵を倒しました！");
-
-        // 1. 死亡アニメーションを再生
-        if (GetComponent<Animator>() != null)
+        // 1. ナビメッシュを完全に無効化する
+        UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (agent != null)
         {
-            GetComponent<Animator>().SetTrigger("Die"); // Animatorで"Die"トリガーを設定してください
+            agent.isStopped = true;       // 移動停止命令
+            agent.velocity = Vector3.zero; // 現在持っている慣性をゼロにする
+            agent.enabled = false;        // コンポーネント自体をOFFにする（これ以降の更新を止める）
         }
 
-        // 2. AIやナビゲーションを止める（倒れた後も追いかけてくるのを防ぐ）
-        if (GetComponent<UnityEngine.AI.NavMeshAgent>() != null)
+        // 2. 死亡アニメーションの再生
+        Animator anim = GetComponent<Animator>();
+        if (anim != null)
         {
-            GetComponent<UnityEngine.AI.NavMeshAgent>().isStopped = true;
+            anim.SetTrigger("Die");
         }
 
-        // このスクリプト自体を無効にして、死体にさらにダメージが入るのを防ぐ
-        this.enabled = false;
+        // 3. 他のスクリプト（AIの思考など）も止める
+        if (GetComponent<EnemyPatrol>() != null)
+        {
+            GetComponent<EnemyPatrol>().enabled = false;
+        }
 
-        // 3. 2秒＋アニメーション時間を考慮して削除
-        // ここでは「命令を出してから4秒後」に削除するように設定（アニメ2秒＋余韻2秒）
+        Collider col = GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = false; // 死体すり抜けを可能にする
+        }
+
+        // 4. キャラクター削除の予約
         Destroy(gameObject, 4.0f);
     }
-
     private void OnTriggerEnter(Collider other)
     {
         // 当たった相手のタグが "PlayerWeapon" の場合だけ実行

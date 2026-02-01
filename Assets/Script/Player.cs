@@ -11,21 +11,20 @@ public class Player : MonoBehaviour
     private float jumpHeight = 1.5f;
 
     private float soundTimer = 0f;
-
     private float jumpCooldown = 1.1f;
     private bool canJump = true;
 
     // --- 攻撃用変数 ---
     [Header("Combat Settings")]
-    public WeaponController weaponScript; // Pickup.csからセットされる（攻撃判定用）
-    private bool isAttacking = false;     // 攻撃中フラグ
+    public WeaponController weaponScript;
+    private bool isAttacking = false;
 
-    // ---  表示切り替え用の武器オブジェクト参照 ---
+    // --- ★ここを修正しました（名前をPickup.csと統一） ---
     [Header("Weapon Models")]
-    public GameObject cameraWeaponObj; // カメラ追従用の武器（普段見える）
-    public GameObject handWeaponObj;   // 手追従用の武器（攻撃時に見える）
+    public GameObject currentCameraWeapon; // 普段見える武器
+    public GameObject currentHandWeapon;   // 攻撃時に見える武器
 
-    private Coroutine resetWeaponCoroutine; // リセット処理を管理する変数
+    private Coroutine resetWeaponCoroutine;
 
     private CharacterController controller;
     private Vector3 velocity;
@@ -43,13 +42,8 @@ public class Player : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         footstepSource = GetComponent<AudioSource>();
-
         animator = GetComponent<Animator>();
-        if (animator == null)
-        {
-            animator = GetComponentInChildren<Animator>();
-        }
-
+        if (animator == null) animator = GetComponentInChildren<Animator>();
         wasGrounded = true;
     }
 
@@ -57,142 +51,50 @@ public class Player : MonoBehaviour
     {
         if (GameManager.isPaused) return;
 
-        isGrounded = controller.isGrounded;
-
-        if (animator != null)
-        {
-            animator.SetBool("IsGrounded", isGrounded);
-        }
-
-        // --- 攻撃入力の検知 ---
+        // --- 攻撃入力 ---
         if (Input.GetButtonDown("Fire1") && weaponScript != null)
         {
-            //if (animator != null)
-            //{
-            //    animator.Play("Attack", -1, 0f);
-            //}
             StartAttack();
         }
 
-        if (!wasGrounded && isGrounded)
-        {
-            if (landSound != null && sfxSource != null) sfxSource.PlayOneShot(landSound);
-            NotifyEnemyOfAction(transform.position, 20f);
-            velocity.y = -2f;
-            StartCoroutine(JumpCooldownRoutine());
-        }
-
-        if (isGrounded && velocity.y < 0)
-        {
-            velocity.y = -2f;
-        }
-
-        bool isShifting = Input.GetKey(KeyCode.LeftShift);
-        float currentSpeed = isShifting ? walkSpeed : runSpeed;
-
-        float moveX = 0;
-        float moveZ = 0;
-        if (Input.GetKey(KeyCode.W)) moveZ += 1;
-        if (Input.GetKey(KeyCode.S)) moveZ -= 1;
-        if (Input.GetKey(KeyCode.A)) moveX -= 1;
-        if (Input.GetKey(KeyCode.D)) moveX += 1;
-
-        Vector3 inputDir = new Vector3(moveX, 0, moveZ).normalized;
-
-        if (animator != null)
-        {
-            float animX = inputDir.x * currentSpeed;
-            float animZ = inputDir.z * currentSpeed;
-            animator.SetFloat("InputX", animX, 0.1f, Time.deltaTime);
-            animator.SetFloat("InputZ", animZ, 0.1f, Time.deltaTime);
-        }
-
-        Vector3 move = transform.right * moveX + transform.forward * moveZ;
-        controller.Move(move * currentSpeed * Time.deltaTime);
-
-        bool isMoving = inputDir.magnitude > 0;
-        if (isGrounded && isMoving && !isShifting)
-        {
-            if (!footstepSource.isPlaying) footstepSource.Play();
-            NotifyEnemyOfFootsteps();
-        }
-        else
-        {
-            if (footstepSource.isPlaying) footstepSource.Stop();
-        }
-
-        if (Input.GetButtonDown("Jump") && isGrounded && canJump)
-        {
-            velocity.y = Mathf.Sqrt(jumpHeight * 1.5f * gravity);
-            if (jumpSound != null && sfxSource != null) sfxSource.PlayOneShot(jumpSound);
-            NotifyEnemyOfAction(transform.position, 15f);
-
-            if (animator != null)
-            {
-                animator.SetTrigger("Jump");
-            }
-            canJump = false;
-        }
-
-        velocity.y -= gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
-
-        wasGrounded = isGrounded;
+        HandleMovement();
     }
 
-    // --- 攻撃開始メソッド ---
+    // --- 攻撃開始 ---
     void StartAttack()
     {
         isAttacking = true;
 
-        // 1. 武器の表示切り替え（手元を表示）
-        if (cameraWeaponObj != null) cameraWeaponObj.SetActive(false);
-        if (handWeaponObj != null) handWeaponObj.SetActive(true);
+        // 1. 武器の表示切り替え（名前修正済み）
+        if (currentCameraWeapon != null) currentCameraWeapon.SetActive(false);
+        if (currentHandWeapon != null) currentHandWeapon.SetActive(true);
 
         // 2. アニメーション再生
         if (animator != null)
         {
-            // 強制的に最初から再生
             animator.Play("Attack", -1, 0f);
-            animator.SetTrigger("Attack");
         }
 
-        // 3. 当たり判定のリセット
-        if (weaponScript != null)
-        {
-            weaponScript.DisableHitBox();
-        }
+        // 3. 当たり判定リセット
+        if (weaponScript != null) weaponScript.DisableHitBox();
 
-        // 4. 強制リセットの予約
-        // もし前のリセット待ちが残っていたらキャンセルして、新しく予約し直す
+        // 4. 強制リセット予約
         if (resetWeaponCoroutine != null) StopCoroutine(resetWeaponCoroutine);
 
-        //「0.6f」を、あなたのアニメーションの長さに合わせて調整してください！
-        // （少し短めに設定するのがコツです）
-        resetWeaponCoroutine = StartCoroutine(ForceResetWeapon(1.7f));
+        // アニメーションの長さに合わせて時間を調整してください（例: 0.6f）
+        resetWeaponCoroutine = StartCoroutine(ForceResetWeapon(0.6f));
     }
 
-    // ★追加: 強制リセット用のコルーチン
+    // --- 強制リセット ---
     IEnumerator ForceResetWeapon(float delay)
     {
         yield return new WaitForSeconds(delay);
-
-        // もし攻撃中なら、強制的に終了処理を呼ぶ
-        if (isAttacking)
-        {
-            AE_EndHit();
-        }
+        if (isAttacking) AE_EndHit();
     }
 
-    // --- アニメーションイベント用メソッド ---
-    public void AE_StartHit()
-    {
-        if (weaponScript != null) weaponScript.EnableHitBox();
-    }
-
+    // --- 攻撃終了処理 ---
     public void AE_EndHit()
     {
-        // 処理が走ったら、待機中のコルーチンは破棄する（二重実行防止）
         if (resetWeaponCoroutine != null)
         {
             StopCoroutine(resetWeaponCoroutine);
@@ -203,9 +105,66 @@ public class Player : MonoBehaviour
 
         isAttacking = false;
 
-        // ★武器の表示を元に戻す（カメラ武器を表示）
-        if (cameraWeaponObj != null) cameraWeaponObj.SetActive(true);
-        if (handWeaponObj != null) handWeaponObj.SetActive(false);
+        // ★表示を元に戻す（名前修正済み）
+        if (currentHandWeapon != null) currentHandWeapon.SetActive(false);
+        if (currentCameraWeapon != null) currentCameraWeapon.SetActive(true);
+    }
+
+    // --- 移動関係 ---
+    void HandleMovement()
+    {
+        isGrounded = controller.isGrounded;
+        if (animator != null) animator.SetBool("IsGrounded", isGrounded);
+
+        if (!wasGrounded && isGrounded)
+        {
+            if (landSound != null && sfxSource != null) sfxSource.PlayOneShot(landSound);
+            NotifyEnemyOfAction(transform.position, 20f);
+            velocity.y = -2f;
+            StartCoroutine(JumpCooldownRoutine());
+        }
+        wasGrounded = isGrounded;
+
+        if (isGrounded && velocity.y < 0) velocity.y = -2f;
+
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        bool isShifting = Input.GetKey(KeyCode.LeftShift);
+        float currentSpeed = isShifting ? walkSpeed : runSpeed;
+
+        Vector3 move = transform.right * h + transform.forward * v;
+        controller.Move(move * currentSpeed * Time.deltaTime);
+
+        // 重力
+        if (Input.GetButtonDown("Jump") && isGrounded && canJump)
+        {
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * -9.81f);
+            if (jumpSound) sfxSource.PlayOneShot(jumpSound);
+            NotifyEnemyOfAction(transform.position, 15f);
+            if (animator) animator.SetTrigger("Jump");
+            canJump = false;
+        }
+
+        velocity.y += -9.81f * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+
+        // アニメーション
+        if (animator != null)
+        {
+            animator.SetFloat("InputX", h * currentSpeed);
+            animator.SetFloat("InputZ", v * currentSpeed);
+        }
+
+        // 足音
+        if (isGrounded && move.magnitude > 0 && !isShifting)
+        {
+            if (!footstepSource.isPlaying) footstepSource.Play();
+            NotifyEnemyOfFootsteps();
+        }
+        else
+        {
+            if (footstepSource.isPlaying) footstepSource.Stop();
+        }
     }
 
     IEnumerator JumpCooldownRoutine()

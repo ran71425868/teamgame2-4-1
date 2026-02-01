@@ -2,53 +2,49 @@ using UnityEngine;
 
 public class WeaponController : MonoBehaviour
 {
+    // ★SimpleWeaponの数値を参照するための変数
+    private SimpleWeapon simpleWeapon;
+
+    // もしSimpleWeaponがない場合の予備ダメージ
+    public int defaultDamage = 10;
+
     private Collider weaponCollider;
     private bool isPlayerWeapon = false;
 
-    // ★修正ポイント1: Awakeでは「取得」だけ行う（無効化はしない！）
     void Awake()
     {
         weaponCollider = GetComponent<Collider>();
-
-        // もしコライダーが見つからなければエラーを出す（念のため）
         if (weaponCollider == null)
         {
-            // 子オブジェクトにあるかもしれないので探す
             weaponCollider = GetComponentInChildren<Collider>();
         }
 
-        // ▼▼▼ 削除またはコメントアウトしました ▼▼▼
-        /* * ここで enabled = false にしてしまうと、地面にある時に
-         * レイキャスト（視線）が当たらなくなり、拾えなくなります。
-         */
-        // if (weaponCollider != null)
-        // {
-        //    weaponCollider.enabled = false;
-        //    weaponCollider.isTrigger = true;
-        // }
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // ★同じオブジェクトにある SimpleWeapon スクリプトを取得する
+        simpleWeapon = GetComponent<SimpleWeapon>();
+        if (simpleWeapon == null)
+        {
+            // なければ子オブジェクトも探してみる
+            simpleWeapon = GetComponentInChildren<SimpleWeapon>();
+        }
     }
 
     public void Setup(bool isPlayer)
     {
         isPlayerWeapon = isPlayer;
 
-        // 物理挙動を止める
         if (TryGetComponent<Rigidbody>(out Rigidbody rb))
         {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
 
-        // ★修正ポイント2: 拾われたこのタイミングで初めてコライダーを攻撃用に切り替える
         if (weaponCollider != null)
         {
-            weaponCollider.enabled = false; // 攻撃する時までOFF
-            weaponCollider.isTrigger = true; // 物理衝突しないようにTriggerにする
+            weaponCollider.enabled = false;
+            weaponCollider.isTrigger = true;
         }
     }
 
-    // ★安全対策: nullチェックを追加
     public void EnableHitBox()
     {
         if (weaponCollider != null) weaponCollider.enabled = true;
@@ -63,16 +59,32 @@ public class WeaponController : MonoBehaviour
     {
         if (isPlayerWeapon)
         {
-            if (other.CompareTag("Enemy"))
+            if (other.CompareTag("Enemy") || other.CompareTag("enemy_mob"))
             {
-                other.SendMessage("TakeDamage", 10, SendMessageOptions.DontRequireReceiver);
+                // ★攻撃力を決定するロジック
+                int finalDamage = defaultDamage;
+
+                // SimpleWeaponがついているなら、そこのdamage数値を使う
+                if (simpleWeapon != null)
+                {
+                    finalDamage = simpleWeapon.damage;
+                }
+
+                // 決定したダメージを送る
+                other.SendMessage("TakeDamage", finalDamage, SendMessageOptions.DontRequireReceiver);
+
+                // 確認用ログ
+                Debug.Log(other.name + " に " + finalDamage + " ダメージ (SimpleWeapon参照)");
             }
         }
         else
         {
             if (other.CompareTag("Player"))
             {
-                other.SendMessage("TakeDamage", 10, SendMessageOptions.DontRequireReceiver);
+                int finalDamage = defaultDamage;
+                if (simpleWeapon != null) finalDamage = simpleWeapon.damage;
+
+                other.SendMessage("TakeDamage", finalDamage, SendMessageOptions.DontRequireReceiver);
             }
         }
     }
