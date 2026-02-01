@@ -44,6 +44,13 @@ public class Enemy : MonoBehaviour
         {
             TryPlaceEnemy();
         }
+        yield return null;
+
+        // GameManager‚É“G‚Ì‘”‚ğ‹³‚¦‚é
+        if (GameClear.instance != null)
+            GameClear.instance.remainingEnemies = enemyCount;
+
+       
     }
 
     /// <summary>
@@ -99,6 +106,7 @@ public class Enemy : MonoBehaviour
             Instantiate(enemyPrefab, hit.position, Quaternion.identity);
             usedPositions.Add(hit.position);
             return;
+
         }
     }
 
