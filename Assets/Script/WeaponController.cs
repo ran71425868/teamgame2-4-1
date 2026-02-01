@@ -3,49 +3,76 @@ using UnityEngine;
 public class WeaponController : MonoBehaviour
 {
     private Collider weaponCollider;
-
-    // この武器の持ち主はプレイヤーか？ (true=プレイヤー, false=敵)
     private bool isPlayerWeapon = false;
 
-    void Start()
+    // ★修正ポイント1: Awakeでは「取得」だけ行う（無効化はしない！）
+    void Awake()
     {
         weaponCollider = GetComponent<Collider>();
-        weaponCollider.enabled = false;
-        weaponCollider.isTrigger = true;
+
+        // もしコライダーが見つからなければエラーを出す（念のため）
+        if (weaponCollider == null)
+        {
+            // 子オブジェクトにあるかもしれないので探す
+            weaponCollider = GetComponentInChildren<Collider>();
+        }
+
+        // ▼▼▼ 削除またはコメントアウトしました ▼▼▼
+        /* * ここで enabled = false にしてしまうと、地面にある時に
+         * レイキャスト（視線）が当たらなくなり、拾えなくなります。
+         */
+        // if (weaponCollider != null)
+        // {
+        //    weaponCollider.enabled = false;
+        //    weaponCollider.isTrigger = true;
+        // }
+        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
     }
 
-    // ★重要: 拾われた瞬間に、持ち主の情報をセットするメソッド
     public void Setup(bool isPlayer)
     {
         isPlayerWeapon = isPlayer;
+
+        // 物理挙動を止める
+        if (TryGetComponent<Rigidbody>(out Rigidbody rb))
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+
+        // ★修正ポイント2: 拾われたこのタイミングで初めてコライダーを攻撃用に切り替える
+        if (weaponCollider != null)
+        {
+            weaponCollider.enabled = false; // 攻撃する時までOFF
+            weaponCollider.isTrigger = true; // 物理衝突しないようにTriggerにする
+        }
     }
 
-    // アニメーションイベント用
-    public void EnableHitBox() => weaponCollider.enabled = true;
-    public void DisableHitBox() => weaponCollider.enabled = false;
+    // ★安全対策: nullチェックを追加
+    public void EnableHitBox()
+    {
+        if (weaponCollider != null) weaponCollider.enabled = true;
+    }
+
+    public void DisableHitBox()
+    {
+        if (weaponCollider != null) weaponCollider.enabled = false;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        // 持ち主が「プレイヤー」の場合
         if (isPlayerWeapon)
         {
-            // 敵(Enemy)にだけ当たる
             if (other.CompareTag("Enemy"))
             {
-                // ダメージ処理（敵側のTakeDamageを呼ぶ）
                 other.SendMessage("TakeDamage", 10, SendMessageOptions.DontRequireReceiver);
-                Debug.Log("プレイヤーの攻撃が敵にヒット！");
             }
         }
-        // 持ち主が「敵」の場合
         else
         {
-            // プレイヤー(Player)にだけ当たる
             if (other.CompareTag("Player"))
             {
-                // ダメージ処理（Player側のTakeDamageを呼ぶ）
                 other.SendMessage("TakeDamage", 10, SendMessageOptions.DontRequireReceiver);
-                Debug.Log("敵の攻撃がプレイヤーにヒット！");
             }
         }
     }

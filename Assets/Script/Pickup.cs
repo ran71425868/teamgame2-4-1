@@ -10,8 +10,13 @@ public class Pickup : MonoBehaviour
     public KeyCode pickupKey = KeyCode.E;
 
     [Header("Equip Settings")]
-    public Transform handPoint;
-    private GameObject currentItem;
+    public Transform handPoint;    // カメラの下にある武器ホルダー
+    public Transform handSocket;   // ★追加: 右手ボーンの下に作った武器ソケット
+
+    // ★変更: 2つの武器を管理するように変更
+    private GameObject currentCameraItem; // カメラ用
+    private GameObject currentHandItem;   // 手用
+
     Armor Playerarmor;
 
     // HUDManagerへの参照
@@ -20,19 +25,16 @@ public class Pickup : MonoBehaviour
     private WeaponItem currentTargetItem;
     private Armor currentTargetArmor;
 
-    // --- 追加: 音声設定 ---
     [Header("Sound Settings")]
-    public AudioClip weaponPickupSound; // 武器を拾った時の音
-    public AudioClip armorPickupSound;  // アーマーを拾った時の音
-    public AudioSource audioSource;     // 音を鳴らすスピーカー
-    // ---------------------
+    public AudioClip weaponPickupSound;
+    public AudioClip armorPickupSound;
+    public AudioSource audioSource;
 
     void Start()
     {
         Playerarmor = GetComponent<Armor>();
         hudManager = FindObjectOfType<HUDManager>();
 
-        // --- 追加: AudioSourceが設定されていなければ自動取得 ---
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
@@ -101,12 +103,10 @@ public class Pickup : MonoBehaviour
                 {
                     if (Playerarmor != null)
                     {
-                        // --- 追加: アーマー取得音を再生 ---
                         if (audioSource != null && armorPickupSound != null)
                         {
                             audioSource.PlayOneShot(armorPickupSound);
                         }
-                        // ------------------------------
 
                         Playerarmor.EquipArmor(armor.armorValue);
                         Destroy(armor.gameObject);
@@ -118,12 +118,10 @@ public class Pickup : MonoBehaviour
                 WeaponItem weapon = hit.collider.GetComponent<WeaponItem>();
                 if (weapon != null)
                 {
-                    // --- 追加: 武器取得音を再生 ---
                     if (audioSource != null && weaponPickupSound != null)
                     {
                         audioSource.PlayOneShot(weaponPickupSound);
                     }
-                    // ---------------------------
 
                     weapon.Pickup(this);
                     currentTargetItem = null;
@@ -133,39 +131,87 @@ public class Pickup : MonoBehaviour
         }
     }
 
-    // ドロップ処理を追加した装備関数
+    // ★修正: 2つの武器を生成してPlayerに登録する処理
     public void EquipItem(GameObject equipPrefab)
     {
-        if (equipPrefab == null) return;
-
-        // --- ドロップ処理 ---
-        if (currentItem != null)
+        if (equipPrefab == null)
         {
-            // 今持っている武器の WeaponData を取得
-            WeaponData oldData = currentItem.GetComponent<WeaponData>();
+            Debug.LogError("エラー: Equip Prefab が設定されていません！");
+            return;
+        }
 
-            // ドロップ用プレハブが設定されていれば生成
+        // --- 古い武器のドロップと削除 ---
+        if (currentCameraItem != null)
+        {
+            // ドロップ品生成は片方（カメラ用）から情報を取ればOK
+            WeaponData oldData = currentCameraItem.GetComponent<WeaponData>();
             if (oldData != null && oldData.dropPrefab != null)
             {
-                // プレイヤーの少し前・少し上に生成（足元に埋まらないように）
                 Vector3 dropPos = transform.position + (transform.forward * 0.5f) + (Vector3.up * 0.5f);
                 Instantiate(oldData.dropPrefab, dropPos, Quaternion.identity);
             }
-
-            // 古い武器を削除
-            Destroy(currentItem);
+            Destroy(currentCameraItem);
         }
-        // ------------------
+        if (currentHandItem != null)
+        {
+            Destroy(currentHandItem);
+        }
+        // -----------------------------
 
-        // 新しい武器を生成
-        currentItem = Instantiate(equipPrefab, handPoint);
-        currentItem.transform.localPosition = Vector3.zero;
-        currentItem.transform.localRotation = Quaternion.identity;
+        // 1. カメラ用の武器を生成（普段見える用）
+        currentCameraItem = Instantiate(equipPrefab, handPoint);
+        currentCameraItem.transform.localPosition = Vector3.zero;
+        currentCameraItem.transform.localRotation = Quaternion.identity;
 
-        // アイコン更新処理
+        // カメラ用の武器は、スクリプトや当たり判定を無効化しておく（手元のが判定を持つため）
+        WeaponController camCtrl = currentCameraItem.GetComponent<WeaponController>();
+        if (camCtrl != null) camCtrl.enabled = false;
+        Collider col = currentCameraItem.GetComponent<Collider>();
+        if (col != null) col.enabled = false;
+
+        // 2. 手用の武器を生成（攻撃用・普段は見えない）
+        if (handSocket != null)
+        {
+            currentHandItem = Instantiate(equipPrefab, handSocket);
+            currentHandItem.transform.localPosition = Vector3.zero;
+            currentHandItem.transform.localRotation = Quaternion.identity;
+
+            // 最初は非表示
+            currentHandItem.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("Pickupスクリプトの 'Hand Socket' が設定されていません！");
+        }
+
+        // 3. Playerスクリプトに登録
+        // 攻撃判定を行うのは「手の武器」の方のコントローラー
+        if (currentHandItem != null)
+        {
+            WeaponController handCtrl = currentHandItem.GetComponent<WeaponController>();
+            if (handCtrl != null)
+            {
+                handCtrl.Setup(true);
+
+                Player player = GetComponentInParent<Player>();
+                if (player != null)
+                {
+                    // 攻撃用スクリプトとして「手の武器」を登録
+                    player.weaponScript = handCtrl;
+
+                    // 表示切り替え用に2つのオブジェクトを登録
+                    player.cameraWeaponObj = currentCameraItem;
+                    player.handWeaponObj = currentHandItem;
+
+                    Debug.Log("成功: Playerに武器（カメラ用・手用）を登録しました！");
+                }
+            }
+        }
+
+        // アイコン更新
         if (hudManager != null)
         {
-            WeaponData data = currentItem.GetComponent<WeaponData>();
+            WeaponData data = currentCameraItem.GetComponent<WeaponData>();
             if (data != null) hudManager.UpdateWeaponIcon(data.icon);
             else hudManager.UpdateWeaponIcon(null);
         }
@@ -173,10 +219,11 @@ public class Pickup : MonoBehaviour
 
     void LateUpdate()
     {
-        if (currentItem != null)
+        // カメラ用の武器だけ位置を強制リセット（手の武器はボーンについていくので不要）
+        if (currentCameraItem != null)
         {
-            currentItem.transform.localPosition = Vector3.zero;
-            currentItem.transform.localRotation = Quaternion.identity;
+            currentCameraItem.transform.localPosition = Vector3.zero;
+            currentCameraItem.transform.localRotation = Quaternion.identity;
         }
     }
 }

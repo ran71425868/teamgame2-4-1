@@ -1,7 +1,8 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(CharacterController))]
 public class Player : MonoBehaviour
 {
     private float runSpeed = 7.0f;
@@ -14,10 +15,17 @@ public class Player : MonoBehaviour
     private float jumpCooldown = 1.1f;
     private bool canJump = true;
 
-    // --- �U���p�ϐ� ---
+    // --- 攻撃用変数 ---
     [Header("Combat Settings")]
-    public WeaponController weaponScript; // Pickup.cs����Z�b�g�����
-    private bool isAttacking = false;     // �U�����t���O
+    public WeaponController weaponScript; // Pickup.csからセットされる（攻撃判定用）
+    private bool isAttacking = false;     // 攻撃中フラグ
+
+    // ---  表示切り替え用の武器オブジェクト参照 ---
+    [Header("Weapon Models")]
+    public GameObject cameraWeaponObj; // カメラ追従用の武器（普段見える）
+    public GameObject handWeaponObj;   // 手追従用の武器（攻撃時に見える）
+
+    private Coroutine resetWeaponCoroutine; // リセット処理を管理する変数
 
     private CharacterController controller;
     private Vector3 velocity;
@@ -56,10 +64,13 @@ public class Player : MonoBehaviour
             animator.SetBool("IsGrounded", isGrounded);
         }
 
-        // --- �U�����͂̌��m ---
-        // ���N���b�N(Fire1) ���� ����𑕔����Ă��� ���� �U�����łȂ��Ȃ�
-        if (Input.GetButtonDown("Fire1") && weaponScript != null && !isAttacking)
+        // --- 攻撃入力の検知 ---
+        if (Input.GetButtonDown("Fire1") && weaponScript != null)
         {
+            if (animator != null)
+            {
+                animator.Play("Attack", -1, 0f);
+            }
             StartAttack();
         }
 
@@ -129,18 +140,51 @@ public class Player : MonoBehaviour
         wasGrounded = isGrounded;
     }
 
-    // --- �U���J�n���\�b�h ---
+    // --- 攻撃開始メソッド ---
     void StartAttack()
     {
         isAttacking = true;
+
+        // 1. 武器の表示切り替え（手元を表示）
+        if (cameraWeaponObj != null) cameraWeaponObj.SetActive(false);
+        if (handWeaponObj != null) handWeaponObj.SetActive(true);
+
+        // 2. アニメーション再生
         if (animator != null)
         {
-            animator.SetTrigger("Attack"); // Animator��Trigger���N��
+            // 強制的に最初から再生
+            animator.Play("Attack", -1, 0f);
+            animator.SetTrigger("Attack");
+        }
+
+        // 3. 当たり判定のリセット
+        if (weaponScript != null)
+        {
+            weaponScript.DisableHitBox();
+        }
+
+        // 4. 強制リセットの予約
+        // もし前のリセット待ちが残っていたらキャンセルして、新しく予約し直す
+        if (resetWeaponCoroutine != null) StopCoroutine(resetWeaponCoroutine);
+
+        //「0.6f」を、あなたのアニメーションの長さに合わせて調整してください！
+        // （少し短めに設定するのがコツです）
+        resetWeaponCoroutine = StartCoroutine(ForceResetWeapon(1.0f));
+    }
+
+    // ★追加: 強制リセット用のコルーチン
+    IEnumerator ForceResetWeapon(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // もし攻撃中なら、強制的に終了処理を呼ぶ
+        if (isAttacking)
+        {
+            AE_EndHit();
         }
     }
 
-    // --- �A�j���[�V�����C�x���g�p���\�b�h ---
-    // Animation�E�B���h�E�ō쐬�����C�x���g���炱�����Ăяo���܂�
+    // --- アニメーションイベント用メソッド ---
     public void AE_StartHit()
     {
         if (weaponScript != null) weaponScript.EnableHitBox();
@@ -148,8 +192,20 @@ public class Player : MonoBehaviour
 
     public void AE_EndHit()
     {
+        // 処理が走ったら、待機中のコルーチンは破棄する（二重実行防止）
+        if (resetWeaponCoroutine != null)
+        {
+            StopCoroutine(resetWeaponCoroutine);
+            resetWeaponCoroutine = null;
+        }
+
         if (weaponScript != null) weaponScript.DisableHitBox();
-        isAttacking = false; // �U���I���A���̍U�����\�ɂȂ�
+
+        isAttacking = false;
+
+        // ★武器の表示を元に戻す（カメラ武器を表示）
+        if (cameraWeaponObj != null) cameraWeaponObj.SetActive(true);
+        if (handWeaponObj != null) handWeaponObj.SetActive(false);
     }
 
     IEnumerator JumpCooldownRoutine()
