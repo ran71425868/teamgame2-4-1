@@ -37,20 +37,22 @@ public class Enemy : MonoBehaviour
     /// </summary>
     IEnumerator PlaceEnemies()
     {
-        // 1フレーム待って、NavMesh / Player / Camera の初期化を待つ
         yield return null;
+
+        // GameManagerに数をセット（これが動いていないとクリアにならない）
+        if (GameClear.instance != null)
+        {
+            GameClear.instance.SetEnemyCount(enemyCount);
+        }
+        else
+        {
+            Debug.LogError("GameManagerが見つかりません！Hierarchyに配置していますか？");
+        }
 
         for (int i = 0; i < enemyCount; i++)
         {
             TryPlaceEnemy();
         }
-        yield return null;
-
-        // GameManagerに敵の総数を教える
-        if (GameClear.instance != null)
-            GameClear.instance.remainingEnemies = enemyCount;
-
-       
     }
 
     /// <summary>

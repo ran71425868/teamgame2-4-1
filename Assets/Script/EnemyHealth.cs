@@ -63,7 +63,11 @@ public class EnemyHealth : MonoBehaviour
         {
             col.enabled = false; // 死体すり抜けを可能にする
         }
-
+        // 死ぬ瞬間にGameManagerに通知
+        if (GameClear.instance != null)
+        {
+            GameClear.instance.EnemyDefeated();
+        }
         // 4. キャラクター削除の予約
         Destroy(gameObject, 4.0f);
     }
