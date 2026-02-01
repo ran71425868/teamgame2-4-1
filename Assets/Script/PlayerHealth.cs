@@ -29,14 +29,6 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            TakeDamage(10f); // テスト用
-        }
-    }
-
     // 引数に attacker を追加（前回の変更点）
     public void TakeDamage(float amount, Transform attacker = null)
     {
