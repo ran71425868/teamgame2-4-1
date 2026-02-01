@@ -169,7 +169,7 @@ public class Player : MonoBehaviour
 
         //「0.6f」を、あなたのアニメーションの長さに合わせて調整してください！
         // （少し短めに設定するのがコツです）
-        resetWeaponCoroutine = StartCoroutine(ForceResetWeapon(1.0f));
+        resetWeaponCoroutine = StartCoroutine(ForceResetWeapon(1.7f));
     }
 
     // ★追加: 強制リセット用のコルーチン
