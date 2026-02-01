@@ -67,10 +67,10 @@ public class Player : MonoBehaviour
         // --- 攻撃入力の検知 ---
         if (Input.GetButtonDown("Fire1") && weaponScript != null)
         {
-            if (animator != null)
-            {
-                animator.Play("Attack", -1, 0f);
-            }
+            //if (animator != null)
+            //{
+            //    animator.Play("Attack", -1, 0f);
+            //}
             StartAttack();
         }
 

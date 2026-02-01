@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 1938088566466107982}
   - component: {fileID: 3263599950683592171}
   - component: {fileID: 769646683950326049}
+  - component: {fileID: 5349680368646386906}
+  - component: {fileID: 7471549468725869544}
   m_Layer: 0
   m_Name: Dagger
   m_TagString: Untagged
@@ -31,7 +33,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3263599950683592171
 MeshFilter:
@@ -83,3 +85,30 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5349680368646386906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1274142545500504308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a1c95c7119b264ebd52cba44fdb7df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 10
+  active: 0
+--- !u!65 &7471549468725869544
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1274142545500504308}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.14712268, y: 0.34984922, z: 0.06126977}
+  m_Center: {x: 0.000000015235454, y: 0.2596165, z: 0.00000024476574}

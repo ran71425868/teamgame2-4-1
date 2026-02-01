@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 8774985205898120647}
   - component: {fileID: 6783535687536572685}
   - component: {fileID: 3173023279134295672}
+  - component: {fileID: 3786909717771365140}
+  - component: {fileID: 7213353598140857951}
   m_Layer: 0
   m_Name: Club
   m_TagString: Untagged
@@ -32,7 +34,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8774985205898120647
 MeshFilter:
@@ -96,3 +98,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aeb6e4a63f17574f9531e6cf025b7d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3786909717771365140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4981836282949982424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29a1c95c7119b264ebd52cba44fdb7df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 30
+  active: 0
+--- !u!65 &7213353598140857951
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4981836282949982424}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.17389828, y: 0.3248277, z: 0.17389828}
+  m_Center: {x: 0.000000020669152, y: 0.50194335, z: 0.00000025609418}

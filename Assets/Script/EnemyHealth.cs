@@ -37,14 +37,31 @@ public class EnemyHealth : MonoBehaviour
     void Die()
     {
         Debug.Log("敵を倒しました！");
-        // ここで倒れた時のアニメーション再生や、オブジェクト削除を行う
-        Destroy(gameObject);
+
+        // 1. 死亡アニメーションを再生
+        if (GetComponent<Animator>() != null)
+        {
+            GetComponent<Animator>().SetTrigger("Die"); // Animatorで"Die"トリガーを設定してください
+        }
+
+        // 2. AIやナビゲーションを止める（倒れた後も追いかけてくるのを防ぐ）
+        if (GetComponent<UnityEngine.AI.NavMeshAgent>() != null)
+        {
+            GetComponent<UnityEngine.AI.NavMeshAgent>().isStopped = true;
+        }
+
+        // このスクリプト自体を無効にして、死体にさらにダメージが入るのを防ぐ
+        this.enabled = false;
+
+        // 3. 2秒＋アニメーション時間を考慮して削除
+        // ここでは「命令を出してから4秒後」に削除するように設定（アニメ2秒＋余韻2秒）
+        Destroy(gameObject, 4.0f);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         // 当たった相手のタグが "PlayerWeapon" の場合だけ実行
-        if (other.CompareTag("PlayerWeapon"))
+        if (other.CompareTag("Enemy"))
         {
             // ここでは一律10ダメージとしていますが、武器側にダメージ量を持たせることも可能です
             TakeDamage(10);

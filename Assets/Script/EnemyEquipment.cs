@@ -8,6 +8,14 @@ public class EnemyEquipment : MonoBehaviour
     public GameObject swordModel;
     public GameObject axeModel;
     public GameObject hammerModel;
+    public GameObject clubModel;
+    public GameObject daggerModel;
+    public GameObject flangedmaceModel;
+    public GameObject maceModel;
+    public GameObject saberModel;
+    public GameObject scytheModel;
+    public GameObject shieldModel;
+    public GameObject spearModel;
     public GameObject defaultWeapon;
 
     [Header("アイテム（防具）モデル")]
@@ -18,6 +26,14 @@ public class EnemyEquipment : MonoBehaviour
         if (swordModel) swordModel.SetActive(false);
         if (axeModel) axeModel.SetActive(false);
         if (hammerModel) hammerModel.SetActive(false);
+        if (clubModel) clubModel.SetActive(false);
+        if (daggerModel) daggerModel.SetActive(false);
+        if (flangedmaceModel) flangedmaceModel.SetActive(false);
+        if (maceModel) maceModel.SetActive(false);
+        if (saberModel) saberModel.SetActive(false);
+        if (scytheModel) scytheModel.SetActive(false);
+        if (shieldModel) shieldModel.SetActive(false);
+        if (spearModel) spearModel.SetActive(false);
 
         // 拾った武器の名前に特定の文字が含まれているかチェックして、手元のモデルを表示
         if (weaponName.Contains("Sword"))
@@ -31,6 +47,38 @@ public class EnemyEquipment : MonoBehaviour
         else if (weaponName.Contains("Hammer"))
         {
             if (hammerModel) hammerModel.SetActive(true);
+        }
+        else if (weaponName.Contains("Club"))
+        {
+            if (clubModel) clubModel.SetActive(true);
+        }
+        else if (weaponName.Contains("Dagger"))
+        {
+            if (daggerModel) daggerModel.SetActive(true);
+        }
+        else if (weaponName.Contains("FlangedMace"))
+        {
+            if (flangedmaceModel) flangedmaceModel.SetActive(true);
+        }
+        else if (weaponName.Contains("Mace"))
+        {
+            if (maceModel) maceModel.SetActive(true);
+        }
+        else if (weaponName.Contains("Saber"))
+        {
+            if (saberModel) saberModel.SetActive(true);
+        }
+        else if (weaponName.Contains("Scythe"))
+        {
+            if (scytheModel) scytheModel.SetActive(true);
+        }
+        else if (weaponName.Contains("Shield"))
+        {
+            if (shieldModel) shieldModel.SetActive(true);
+        }
+        else if (weaponName.Contains("Spear"))
+        {
+            if (spearModel) spearModel.SetActive(true);
         }
         else
         {
@@ -68,6 +116,7 @@ public class EnemyEquipment : MonoBehaviour
         DeactivateWeaponHit(swordModel, isActive);
         DeactivateWeaponHit(axeModel, isActive);
         DeactivateWeaponHit(hammerModel, isActive);
+        DeactivateWeaponHit(clubModel, isActive);
         DeactivateWeaponHit(defaultWeapon, isActive);
     }
 
@@ -77,6 +126,14 @@ public class EnemyEquipment : MonoBehaviour
         if (swordModel != null && swordModel.activeSelf) return swordModel;
         if (axeModel != null && axeModel.activeSelf) return axeModel;
         if (hammerModel != null && hammerModel.activeSelf) return hammerModel;
+        if (clubModel != null && clubModel.activeSelf) return clubModel;
+        if (daggerModel != null && daggerModel.activeSelf) return daggerModel;
+        if (flangedmaceModel != null && flangedmaceModel.activeSelf) return flangedmaceModel;
+        if (maceModel != null && maceModel.activeSelf) return maceModel;
+        if (saberModel != null && saberModel.activeSelf) return saberModel;
+        if (scytheModel != null && scytheModel.activeSelf) return scytheModel;
+        if (shieldModel != null && shieldModel.activeSelf) return shieldModel;
+        if (spearModel != null && spearModel.activeSelf) return spearModel;
         if (defaultWeapon != null && defaultWeapon.activeSelf) return defaultWeapon;
         return null;
     }
