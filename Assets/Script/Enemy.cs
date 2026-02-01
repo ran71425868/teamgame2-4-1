@@ -4,75 +4,74 @@ using System.Collections.Generic;
 using System.Collections;
 
 /// <summary>
-/// ゲーム開始時に、マップ上へ敵を指定数ランダム配置するクラス
-/// ・NavMesh上のみ
-/// ・プレイヤー近く＆視界内は避ける
-/// ・敵同士が固まらない
+/// 【初期配置専用】ゲーム開始時に敵をまとめて生成するクラス
+/// ※ Update等で継続的に湧かせる処理はないため、Start時の一回のみ実行されます
 /// </summary>
 public class Enemy : MonoBehaviour
 {
     [Header("Spawn Target")]
-    public GameObject enemyPrefab;   // 配置する敵のPrefab
-    public Transform player;         // プレイヤー（基準点）
+    public GameObject enemyPrefab;   // 生成する敵のプレハブ
+    public Transform player;         // プレイヤー（ここを基準に距離を測る）
 
     [Header("Spawn Settings")]
-    public int enemyCount = 10;              // 初期配置する敵の数
-    public float spawnRadius = 40f;           // プレイヤー周囲の配置半径
-    public float minDistanceFromPlayer = 12f; // プレイヤーとの最低距離
-    public float minDistanceBetweenEnemies = 2.5f; // 敵同士の最低距離
-   
-    public int maxTryCount = 30; // 1体配置するための最大試行回数
+    public int enemyCount = 10;              // 合計で何体出すか
+    public float spawnRadius = 40f;           // プレイヤーからどのくらい離れた範囲に出すか
+    public float minDistanceFromPlayer = 12f; // プレイヤーに近すぎると不自然なので最低これだけ離す
+    public float minDistanceBetweenEnemies = 2.5f; // 敵同士が重ならないように離す距離
 
-    // すでに配置した敵の位置リスト（重なり防止用）
+    public int maxTryCount = 30; // 1体配置する場所を決めるのに何回までやり直すか
+
+    // すでに配置が決まった場所を記録しておくリスト
     List<Vector3> usedPositions = new List<Vector3>();
 
     void Start()
     {
-        // シーン開始時に初期配置を開始
+        // ゲーム開始時に1回だけ実行
         StartCoroutine(PlaceEnemies());
     }
+    private bool hasSpawned = false; // 湧いたかどうかのフラグ
 
-    /// <summary>
-    /// 敵を指定数だけ配置する
-    /// </summary>
     IEnumerator PlaceEnemies()
     {
+        // すでに湧かせた後なら、二度と実行しない
+        if (hasSpawned) yield break;
+        hasSpawned = true;
+
         yield return null;
 
-        // GameManagerに数をセット（これが動いていないとクリアにならない）
         if (GameClear.instance != null)
         {
             GameClear.instance.SetEnemyCount(enemyCount);
-        }
-        else
-        {
-            Debug.LogError("GameManagerが見つかりません！Hierarchyに配置していますか？");
         }
 
         for (int i = 0; i < enemyCount; i++)
         {
             TryPlaceEnemy();
         }
+
+        // 配置が終わったら、このスポーン機能を自爆（無効化）させる
+        this.enabled = false;
+        Destroy(this.gameObject);
     }
 
     /// <summary>
-    /// 条件を満たすランダム位置を探して敵を1体配置する
+    /// 1体分の最適なスポーン地点を探して生成する
     /// </summary>
     void TryPlaceEnemy()
     {
         for (int i = 0; i < maxTryCount; i++)
         {
-            // プレイヤーを中心にランダムな位置を生成
+            // 1. プレイヤー周辺の空中も含めた球体状のランダムな座標を計算
             Vector3 randomPos = player.position + Random.insideUnitSphere * spawnRadius;
-            randomPos.y = player.position.y;
+            randomPos.y = player.position.y; // 高さはプレイヤーと同じにする
 
-            // NavMesh上の有効な位置に変換
+            // 2. その座標の近くにNavMesh（歩ける床）があるか確認
             if (!NavMesh.SamplePosition(randomPos, out NavMeshHit hit, 3f, NavMesh.AllAreas))
-                continue;
+                continue; // 床がなければやり直し
 
-            // --- 建物内判定 (Tagチェック版) ---s
-            // 配置地点の周囲1.5m以内に「Building」タグのオブジェクトがあるか確認
+            // 3. 建物の中（壁や屋根の近く）かどうかを判定
             bool isInside = false;
+            // 足元から少し上(3m)から半径5mの球体で「Building」タグのものを探す
             Collider[] hitColliders = Physics.OverlapSphere(hit.position + Vector3.up * 3f, 5.0f);
             foreach (var col in hitColliders)
             {
@@ -82,14 +81,13 @@ public class Enemy : MonoBehaviour
                     break;
                 }
             }
-            if (isInside) continue; // 建物（壁・柱・屋根）が近くにあるならNG
-            // ---------------------------------
+            if (isInside) continue; // 建物内ならNG、やり直し
 
-            // プレイヤーに近すぎる位置はNG
+            // 4. プレイヤーとの距離チェック
             if (Vector3.Distance(hit.position, player.position) < minDistanceFromPlayer)
-                continue;
+                continue; // 近すぎたらやり直し
 
-            // すでに配置済みの敵と近すぎないかチェック
+            // 5. 他の敵との距離チェック（密集防止）
             bool tooClose = false;
             foreach (var pos in usedPositions)
             {
@@ -99,28 +97,29 @@ public class Enemy : MonoBehaviour
                     break;
                 }
             }
-            if (tooClose) continue;
+            if (tooClose) continue; // 他の敵と近すぎたらやり直し
 
-            // プレイヤーの視界内に入る位置は避ける
-            if (IsInPlayerView(hit.position)) continue;
+            // 6. プレイヤーの視界に入っているかチェック
+            if (IsInPlayerView(hit.position)) continue; // 見ている前でパッと出ないようにやり直し
 
-            // すべての条件をクリアしたら生成
+            // 全てのチェックをクリア！敵を生成
             Instantiate(enemyPrefab, hit.position, Quaternion.identity);
-            usedPositions.Add(hit.position);
-            return;
 
+            // 生成した場所を記録（次の敵の距離チェックに使う）
+            usedPositions.Add(hit.position);
+            return; // 1体出せたらこの関数のループを抜ける
         }
     }
 
     /// <summary>
-    /// 指定したワールド座標がプレイヤーの画面内に入っているか判定
+    /// カメラの視界内かどうかを数学的に判定する
     /// </summary>
     bool IsInPlayerView(Vector3 worldPos)
     {
-        // MainCameraタグが付いたカメラを取得
+        // 3D座標を画面上の座標(0～1)に変換
         Vector3 viewportPos = Camera.main.WorldToViewportPoint(worldPos);
 
-        // 画面内（x,yが0～1）かつカメラ前方（z > 0）なら視界内
+        // Zがプラス（カメラの前方）かつ、XとYが0～1の間なら「画面に映っている」
         return viewportPos.z > 0 &&
                viewportPos.x > 0 && viewportPos.x < 1 &&
                viewportPos.y > 0 && viewportPos.y < 1;
