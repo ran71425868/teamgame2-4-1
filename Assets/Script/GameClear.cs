@@ -6,7 +6,7 @@ public class GameClear : MonoBehaviour
     public static GameClear instance;
     public int remainingEnemies;
     public GameObject clearImageUI; // Canvas Groupを付けた画像
-
+    private int i;
     void Awake()
     {
         if (instance == null) instance = this;
@@ -62,19 +62,19 @@ public class GameClear : MonoBehaviour
             }
         }
 
-        // 4. スローを戻す
-        Time.timeScale = 1.0f;
+     
 
         // 5. 操作不能のままカーソルだけ出す
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-    }
-    public void BackToTitle()
-    {
-        // 念のためTimeScaleを1に戻してからシーン移動
+        // 4. フェードイン完了後、現実時間で1秒待つ
+        yield return new WaitForSecondsRealtime(2.0f);
+
+        // 5. 時間を元に戻してシーン移動
         Time.timeScale = 1.0f;
 
-        // "Title" は自分のタイトルシーンの名前に書き換えてください
+        // "Title" は実際のタイトルシーンの名前に書き換えてください
         SceneManager.LoadScene("TitleScene");
     }
+ 
 }
