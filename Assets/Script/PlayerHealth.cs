@@ -78,6 +78,7 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log("プレイヤーが死亡しました");
 
         DisableControls();
+        GetComponent<Player>().StealWeapon();
 
         // 1. 敵視点カメラ（観戦モード）
         StartSpectatorMode(killer);

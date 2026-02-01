@@ -9,9 +9,9 @@ public class EnemyPatrol : MonoBehaviour
     private float walkSpeed = 3.0f;       // 通常時の速さ
     private float dashSpeed = 8.0f;       // 追跡時の速さ
 
-   // [Header("散策の設定")]
+    // [Header("散策の設定")]
     private float walkRadius = 100f; // ランダムに移動する範囲
-   private float waitTime = 2.0f;     // 待機時間（秒）
+    private float waitTime = 2.0f;     // 待機時間（秒）
 
     //[Header("索敵の設定")]
     private float searchRange = 20f;      // 索敵距離
@@ -22,12 +22,12 @@ public class EnemyPatrol : MonoBehaviour
     // --- 状態管理用フラグ ---
     private Transform targetWeapon; // 見つけた武器
     private bool isHeadingToWeapon = false;
-    private bool hasWeapon = false;
+    public bool hasWeapon = false;
     private bool isWaiting = false;   // 待機中かどうか
     private bool isChasing = false;
     private bool isInvestigating = false; // 音を調査中か
 
-    private  float attackRange = 2.0f; // 攻撃が届く距離
+    private float attackRange = 2.0f; // 攻撃が届く距離
     private float lastAttackTime;
     private float attackCooldown = 1.5f;
 
@@ -36,9 +36,7 @@ public class EnemyPatrol : MonoBehaviour
 
     private NavMeshAgent agent;
     private EnemyEquipment equipment;
-    private Animator anim;                     
-
-
+    private Animator anim;
 
     void Start()
     {
@@ -52,6 +50,9 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
+        // ★修正: エージェントが無効、またはNavMeshに乗っていないなら処理を中断する（死亡時エラー対策）
+        if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh) return;
+
         if (anim != null) anim.SetFloat("Speed", agent.velocity.magnitude);
 
         // 1. プレイヤーを視界で捉えている場合
@@ -112,7 +113,7 @@ public class EnemyPatrol : MonoBehaviour
                 SetRandomDestination();
             }
 
-            // 武器を探す・拾う・巡回する（既存のロジック）
+            // 武器を探す・拾う・巡回する
             if (!hasWeapon)
             {
                 SearchForWeapon();
@@ -158,19 +159,18 @@ public class EnemyPatrol : MonoBehaviour
     // アイテムを探すメソッド
     void SearchForWeapon()
     {
-        if (isHeadingToWeapon) return; // すでに移動中ならスキップ
+        if (hasWeapon || isHeadingToWeapon) return;
 
-        // 周囲の「Item」タグを持つオブジェクトを探す
         GameObject[] items = GameObject.FindGameObjectsWithTag("Weapon");
-     
         foreach (GameObject item in items)
         {
-            if (CanSeeObject(item.transform))
+            // ★追加条件: 親がいない（＝地面に落ちている）ものだけを対象にする
+            if (item.transform.parent == null && CanSeeObject(item.transform))
             {
                 targetWeapon = item.transform;
                 isHeadingToWeapon = true;
                 isInvestigating = false;
-                agent.speed = walkSpeed; // アイテムへは歩いて向かう
+                agent.speed = walkSpeed;
                 break;
             }
         }
@@ -178,8 +178,16 @@ public class EnemyPatrol : MonoBehaviour
 
     void EquipWeapon()
     {
+        if (hasWeapon) return;
         if (targetWeapon == null) return;
 
+        // ★追加条件: ターゲットに親ができていたら（＝プレイヤーに拾われたら）諦める
+        if (targetWeapon.parent != null)
+        {
+            targetWeapon = null;
+            isHeadingToWeapon = false;
+            return;
+        }
         string weaponName = targetWeapon.name;
         Debug.Log(weaponName + " を拾いました！");
 
@@ -194,7 +202,7 @@ public class EnemyPatrol : MonoBehaviour
         StartCoroutine(InvestigateAndResume());
     }
 
-    // 視界判定の汎用メソッド（引数をTransformに変更）
+    // 視界判定の汎用メソッド
     bool CanSeeObject(Transform target)
     {
         if (target == null) return false;
@@ -202,10 +210,7 @@ public class EnemyPatrol : MonoBehaviour
         float distance = Vector3.Distance(transform.position, target.position);
         if (distance < searchRange)
         {
-            // 修正ポイント1: 敵の「目」の高さを少し上げ、前方へオフセット（自分に当たらないように）
             Vector3 eyePosition = transform.position + Vector3.up * 1.5f + transform.forward * 0.5f;
-
-            // 修正ポイント2: アイメントの中心（少し上）を狙う
             Vector3 targetCenter = target.position + Vector3.up * 0.5f;
             Vector3 directionToTarget = (targetCenter - eyePosition).normalized;
 
@@ -214,14 +219,10 @@ public class EnemyPatrol : MonoBehaviour
             if (angle < searchAngle)
             {
                 RaycastHit hit;
-
-                // シーンビューで視線を可視化（デバッグ用）
                 Debug.DrawRay(eyePosition, directionToTarget * distance, Color.green);
 
-                // 修正ポイント3: Raycastの判定ロジック
                 if (Physics.Raycast(eyePosition, directionToTarget, out hit, searchRange))
                 {
-                    // 当たったものがターゲットそのものか、その親/子であればOK
                     if (hit.transform == target || hit.transform.IsChildOf(target) || target.IsChildOf(hit.transform))
                     {
                         return true;
@@ -261,25 +262,18 @@ public class EnemyPatrol : MonoBehaviour
     IEnumerator WaitAndMove()
     {
         isWaiting = true;
-
-        // ここで待機（waitTime秒だけ処理を中断する）
         yield return new WaitForSeconds(waitTime);
-
-        // 新しい目的地を設定
         SetRandomDestination();
-
         isWaiting = false;
     }
 
     // ランダムな目的地を設定するメソッド
     void SetRandomDestination()
     {
-        // 現在地を中心に、walkRadiusの範囲内でランダムな方向を決定
         Vector3 randomDirection = Random.insideUnitSphere * walkRadius;
         randomDirection += transform.position;
 
         NavMeshHit hit;
-        // 指定した座標から一番近い「歩けるNavMesh」上の点を取得
         if (NavMesh.SamplePosition(randomDirection, out hit, walkRadius, 1))
         {
             agent.destination = hit.position;
@@ -317,14 +311,12 @@ public class EnemyPatrol : MonoBehaviour
     {
         if (targetItem == null) return;
 
-        // 見た目を反映
         equipment.EquipItemVisual(targetItem.name);
 
         Destroy(targetItem.gameObject);
         targetItem = null;
         isHeadingToItem = false;
 
-        // 拾った後に少し警戒する動作
         StartCoroutine(InvestigateAndResume());
     }
 }

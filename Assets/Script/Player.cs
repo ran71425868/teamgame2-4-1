@@ -226,6 +226,13 @@ public class Player : MonoBehaviour
             resetWeaponCoroutine = null;
         }
 
-        Debug.Log("！！武器を奪われました！！");
+        // ★追加: HUD（画面の武器アイコン）を消す処理
+        HUDManager hud = FindObjectOfType<HUDManager>();
+        if (hud != null)
+        {
+            hud.UpdateWeaponIcon(null); // アイコンを空にする
+        }
+
+        Debug.Log("！！武器を奪われました（判定・アイコン削除完了）！！");
     }
 }

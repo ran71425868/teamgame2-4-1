@@ -1,6 +1,5 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class EnemyWeapon : MonoBehaviour
@@ -9,40 +8,52 @@ public class EnemyWeapon : MonoBehaviour
     private bool canDamage = false;
     public int active;
 
-    // ƒAƒjƒ[ƒVƒ‡ƒ“‚©‚çŒÄ‚Ño‚µ‚Ä”»’è‚ğON/OFF‚·‚é
+    // ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰å‘¼ã³å‡ºã—ã¦åˆ¤å®šã‚’ON/OFFã™ã‚‹
     public void SetAttackActive(bool active)
     {
         canDamage = active;
+        if (canDamage)
+        {
+            StopAllCoroutines(); // å‰ã®ã‚¿ã‚¤ãƒãƒ¼ãŒã‚ã‚Œã°ãƒªã‚»ãƒƒãƒˆ
+            StartCoroutine(AutoDisableDamage());
+        }
     }
 
+    // â˜…è¿½åŠ : è‡ªå‹•ã§åˆ¤å®šã‚’æ¶ˆã™ã‚³ãƒ«ãƒ¼ãƒãƒ³
+    IEnumerator AutoDisableDamage()
+    {
+        // æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é•·ã•ã«åˆã‚ã›ã¦æ™‚é–“ã¯èª¿æ•´ã—ã¦ãã ã•ã„ï¼ˆ0.5ç§’ã€œ1.0ç§’ãŒç›®å®‰ï¼‰
+        yield return new WaitForSeconds(0.6f);
+        canDamage = false;
+    }
     private void OnTriggerEnter(Collider other)
     {
+        // æ”»æ’ƒåˆ¤å®šãŒONã§ã€ã‹ã¤ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«å½“ãŸã£ãŸå ´åˆ
         if (canDamage && other.CompareTag("Player"))
         {
-            // 1. ‘ŠèiƒvƒŒƒCƒ„[j‚ÌHPƒXƒNƒŠƒvƒg‚ğæ“¾‚·‚é
+            // â˜…ä¿®æ­£: æ­¦å™¨ã‚’å¥ªã†å‡¦ç†ï¼ˆStealWeaponï¼‰ã®ãƒ–ãƒ­ãƒƒã‚¯ã‚’å®Œå…¨ã«å‰Šé™¤ã—ã¾ã—ãŸã€‚
+            // ã“ã‚Œã«ã‚ˆã‚Šã€æ•µãŒæ­¦å™¨ã‚’æŒã£ã¦ã„ã¦ã‚‚ã„ãªãã¦ã‚‚ã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ­¦å™¨ã‚’å¥ªã†ã“ã¨ã¯ã‚ã‚Šã¾ã›ã‚“ã€‚
+
+            // --- ãƒ€ãƒ¡ãƒ¼ã‚¸å‡¦ç† ---
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
 
-            // 2. ƒXƒNƒŠƒvƒg‚ª‚¿‚á‚ñ‚Æ•t‚¢‚Ä‚¢‚½‚çƒ_ƒ[ƒW‚ğ—^‚¦‚é
             if (playerHealth != null)
             {
-                // šC³‰ÓŠš
-                // transform.root ‚Íg‚í‚¸Ae‚ğ‘k‚Á‚Ä EnemyHealth ‚ğ’T‚·
-                // ‚±‚ê‚É‚æ‚èAƒtƒHƒ‹ƒ_•ª‚¯‚³‚ê‚Ä‚¢‚Ä‚àŠmÀ‚É“G–{‘Ì‚ğæ“¾‚Å‚«‚Ü‚·
-                Transform attacker = transform.root; // Œ©‚Â‚©‚ç‚È‚©‚Á‚½‚Ì•ÛŒ¯
-
+                // æ”»æ’ƒè€…ã®ç‰¹å®šï¼ˆè‡ªåˆ†è‡ªèº«ã®è¦ªãªã©ï¼‰
+                Transform attacker = transform.root;
                 EnemyHealth enemySelf = GetComponentInParent<EnemyHealth>();
+
                 if (enemySelf != null)
                 {
                     attacker = enemySelf.transform;
                 }
 
-                // “Á’è‚µ‚½UŒ‚Ò(attacker)‚ğ“n‚·
+                // TakeDamageã®å¼•æ•°å®šç¾©ã«åˆã‚ã›ã¦å‘¼ã³å‡ºã—
                 playerHealth.TakeDamage(damage, attacker);
-
-                Debug.Log("ƒvƒŒƒCƒ„[‚É " + damage + " ƒ_ƒ[ƒWI UŒ‚Ò: " + attacker.name);
+                Debug.Log("ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã« " + damage + " ãƒ€ãƒ¡ãƒ¼ã‚¸ï¼");
             }
 
-            canDamage = false; // 1‰ñ‚ÌU‚è‚Å2‰ñ“–‚½‚ç‚È‚¢‚æ‚¤‚É‚·‚é
+            canDamage = false; // ä¸€å›ã®æ”»æ’ƒã§å¤šæ®µãƒ’ãƒƒãƒˆã—ãªã„ã‚ˆã†ã«åˆ¤å®šã‚’ã‚ªãƒ•ã«ã™ã‚‹
         }
     }
 }

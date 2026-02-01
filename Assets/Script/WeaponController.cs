@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class WeaponController : MonoBehaviour
 {
+    // ★追加: ダメージ数字のプレハブを入れる箱
+    [Header("エフェクト設定")]
+    public GameObject damagePopupPrefab;
+
     // ★SimpleWeaponの数値を参照するための変数
     private SimpleWeapon simpleWeapon;
 
@@ -73,6 +77,22 @@ public class WeaponController : MonoBehaviour
                 // 決定したダメージを送る
                 other.SendMessage("TakeDamage", finalDamage, SendMessageOptions.DontRequireReceiver);
 
+                // ★追加: ダメージ数字を表示する処理
+                if (damagePopupPrefab != null)
+                {
+                    // 敵の少し上あたりに出現させる
+                    // Hitした場所(other.ClosestPoint)に出すとより正確ですが、簡単のため敵の位置+少し上にします
+                    Vector3 spawnPosition = other.transform.position + Vector3.up * 1.5f;
+
+                    // 少し位置をランダムにずらす（重ならないように）
+                    spawnPosition += new Vector3(Random.Range(-0.2f, 0.2f), 0, Random.Range(-0.2f, 0.2f));
+
+                    // 生成！
+                    GameObject popup = Instantiate(damagePopupPrefab, spawnPosition, Quaternion.identity);
+
+                    // 数字をセットする
+                    popup.GetComponent<DamagePopup>().Setup(finalDamage);
+                }
                 // 確認用ログ
                 Debug.Log(other.name + " に " + finalDamage + " ダメージ (SimpleWeapon参照)");
             }

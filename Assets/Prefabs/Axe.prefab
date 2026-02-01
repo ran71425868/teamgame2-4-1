@@ -302,6 +302,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 995110ee0564a014aa7e4b0d957125d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damagePopupPrefab: {fileID: 4224221645453001958, guid: 0dd0b93bfd31cd54ba89036aa17152b0, type: 3}
   defaultDamage: 10
 --- !u!54 &2657015578615545637
 Rigidbody:

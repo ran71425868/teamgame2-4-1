@@ -38,7 +38,7 @@ Transform:
   m_Children:
   - {fileID: 8365071161768477661}
   m_Father: {fileID: 0}
-  m_RootOrder: 20
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &9209470894360696605
 MeshFilter:
@@ -173,6 +173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 995110ee0564a014aa7e4b0d957125d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damagePopupPrefab: {fileID: 4224221645453001958, guid: 0dd0b93bfd31cd54ba89036aa17152b0, type: 3}
   defaultDamage: 10
 --- !u!1 &8365071161768477655
 GameObject:
