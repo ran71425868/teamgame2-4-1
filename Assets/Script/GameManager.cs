@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement; // シーン移動に必要
 using UnityEngine.UI; // UI操作に必要
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance; // どこからでも呼べるようにする
+    public TextMeshProUGUI enemyText;
+    private int enemyCount;
     public GameObject pausePanel; // インスペクターでPausePanelをドラッグ
     public GameObject settingsPanel; // 設定画面のパネル
     public static bool isPaused = false;
@@ -13,8 +17,16 @@ public class GameManager : MonoBehaviour
     public Slider sensitivitySlider;         // インスペクターでSliderをドラッグ
     public Text sensitivityValueText;   // 感度表示用テキスト
 
+    void Awake()
+    {
+        instance = this;
+    }
+
     void Start()
     {
+        // シーン開始時に少しだけ遅らせて数える（敵の生成を待つため）
+        Invoke("UpdateEnemyCount", 0.1f);
+
         // ゲーム開始時にスライダーの初期値を設定
         if (sensitivitySlider != null && cameraScript != null)
         {
@@ -24,6 +36,26 @@ public class GameManager : MonoBehaviour
             UpdateSensitivityText(sensitivitySlider.value);
             // スライダーが動いた時に実行するメソッドを登録
             sensitivitySlider.onValueChanged.AddListener(OnSensitivityChanged);
+        }
+    }
+
+    // シーン内の"Enemy"タグがついた敵を数え直す
+    public void UpdateEnemyCount()
+    {
+        // "Enemy"タグを持つオブジェクトをすべて検索
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        enemyCount = enemies.Length;
+
+        // UI表示を更新
+        if (enemyText != null)
+        {
+            enemyText.text = "残り敵数: " + enemyCount;
+        }
+
+        // 0人になった時の処理（例：クリア！）
+        if (enemyCount <= 0)
+        {
+            enemyText.text = "全滅！クリア！";
         }
     }
 

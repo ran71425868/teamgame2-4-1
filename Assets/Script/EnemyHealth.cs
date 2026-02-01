@@ -6,6 +6,8 @@ public class EnemyHealth : MonoBehaviour
 {
     public int maxHealth = 100;
     private int currentHealth;
+    private bool isDead = false; // ★追加
+
 
     void Start()
     {
@@ -32,6 +34,9 @@ public class EnemyHealth : MonoBehaviour
 
     void Die()
     {
+        if (isDead) return; // ★すでに死んでいたら何もしない
+        isDead = true;
+
         // 1. ナビメッシュを完全に無効化する
         UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         if (agent != null)
@@ -60,9 +65,15 @@ public class EnemyHealth : MonoBehaviour
             col.enabled = false; // 死体すり抜けを可能にする
         }
         // 死ぬ瞬間にGameManagerに通知
-        if (GameClear.instance != null)
+        if (GameManager.instance != null)
         {
             GameClear.instance.EnemyDefeated();
+            Debug.Log("GameManagerに通知します");
+            GameManager.instance.UpdateEnemyCount();
+        }
+        else
+        {
+            Debug.LogError("GameManagerが見つかりません！シーンにGameManagerを配置していますか？");
         }
         // 4. キャラクター削除の予約
         Destroy(gameObject, 4.0f);
