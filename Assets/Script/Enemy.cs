@@ -20,7 +20,7 @@ public class Enemy : MonoBehaviour
     public float spawnRadius = 40f;           // プレイヤー周囲の配置半径
     public float minDistanceFromPlayer = 12f; // プレイヤーとの最低距離
     public float minDistanceBetweenEnemies = 2.5f; // 敵同士の最低距離
-
+   
     public int maxTryCount = 30; // 1体配置するための最大試行回数
 
     // すでに配置した敵の位置リスト（重なり防止用）
@@ -61,6 +61,21 @@ public class Enemy : MonoBehaviour
             if (!NavMesh.SamplePosition(randomPos, out NavMeshHit hit, 3f, NavMesh.AllAreas))
                 continue;
 
+            // --- 建物内判定 (Tagチェック版) ---s
+            // 配置地点の周囲1.5m以内に「Building」タグのオブジェクトがあるか確認
+            bool isInside = false;
+            Collider[] hitColliders = Physics.OverlapSphere(hit.position + Vector3.up * 3f, 5.0f);
+            foreach (var col in hitColliders)
+            {
+                if (col.CompareTag("Building"))
+                {
+                    isInside = true;
+                    break;
+                }
+            }
+            if (isInside) continue; // 建物（壁・柱・屋根）が近くにあるならNG
+            // ---------------------------------
+
             // プレイヤーに近すぎる位置はNG
             if (Vector3.Distance(hit.position, player.position) < minDistanceFromPlayer)
                 continue;
@@ -75,14 +90,12 @@ public class Enemy : MonoBehaviour
                     break;
                 }
             }
-            if (tooClose)
-                continue;
+            if (tooClose) continue;
 
-            // プレイヤーの視界内に入る位置は避ける（FPSの違和感防止）
-            if (IsInPlayerView(hit.position))
-                continue;
+            // プレイヤーの視界内に入る位置は避ける
+            if (IsInPlayerView(hit.position)) continue;
 
-            // 条件をすべて満たしたら敵を生成
+            // すべての条件をクリアしたら生成
             Instantiate(enemyPrefab, hit.position, Quaternion.identity);
             usedPositions.Add(hit.position);
             return;
