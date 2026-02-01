@@ -160,6 +160,7 @@ GameObject:
   - component: {fileID: 5464799973244570242}
   - component: {fileID: 5464799973244570241}
   - component: {fileID: 5464799973244570240}
+  - component: {fileID: -4440199166412006886}
   - component: {fileID: 2657015578615545637}
   m_Layer: 0
   m_Name: Axe
@@ -289,6 +290,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   icon: {fileID: 21300000, guid: ffb0f9cff9a0d6e4fb82751880f8eec1, type: 3}
   dropPrefab: {fileID: 7653511923007391974}
+--- !u!114 &-4440199166412006886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7653511923007391974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 995110ee0564a014aa7e4b0d957125d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!54 &2657015578615545637
 Rigidbody:
   m_ObjectHideFlags: 0
