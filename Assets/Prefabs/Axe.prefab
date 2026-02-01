@@ -168,7 +168,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7024889911306277468
 Transform:
   m_ObjectHideFlags: 0
@@ -183,7 +183,7 @@ Transform:
   m_Children:
   - {fileID: 5464799973858578367}
   m_Father: {fileID: 0}
-  m_RootOrder: -1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6256264811322924537
 MeshFilter:
@@ -302,6 +302,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 995110ee0564a014aa7e4b0d957125d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultDamage: 10
 --- !u!54 &2657015578615545637
 Rigidbody:
   m_ObjectHideFlags: 0

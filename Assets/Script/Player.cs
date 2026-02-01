@@ -7,7 +7,6 @@ public class Player : MonoBehaviour
 {
     private float runSpeed = 7.0f;
     private float walkSpeed = 3.0f;
-    private float gravity = 9.81f;
     private float jumpHeight = 1.5f;
 
     private float soundTimer = 0f;
@@ -198,5 +197,35 @@ public class Player : MonoBehaviour
         {
             hitCollider.SendMessage("HearSound", position, SendMessageOptions.DontRequireReceiver);
         }
+    }
+
+    public void StealWeapon()
+    {
+        // 1. カメラに固定されている武器を削除
+        if (currentCameraWeapon != null)
+        {
+            Destroy(currentCameraWeapon);
+            currentCameraWeapon = null;
+        }
+
+        // 2. 攻撃用（手）の武器を削除
+        if (currentHandWeapon != null)
+        {
+            Destroy(currentHandWeapon);
+            currentHandWeapon = null;
+        }
+
+        // 3. 攻撃スクリプトのリンクを解除（これで攻撃できなくなる）
+        weaponScript = null;
+
+        // 4. 攻撃中だった場合の強制リセット
+        isAttacking = false;
+        if (resetWeaponCoroutine != null)
+        {
+            StopCoroutine(resetWeaponCoroutine);
+            resetWeaponCoroutine = null;
+        }
+
+        Debug.Log("！！武器を奪われました！！");
     }
 }
