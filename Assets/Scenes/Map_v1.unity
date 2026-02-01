@@ -7988,6 +7988,8 @@ MonoBehaviour:
   armorIcon: {fileID: 0}
   weaponIcon: {fileID: 0}
   gameOverUI: {fileID: 307860834}
+  gameOverBGM: {fileID: 8300000, guid: dcd21f811c94d2f439f3f404ae5d8b84, type: 3}
+  buttonSound: {fileID: 8300000, guid: 51568426b8a907b4fac874fad0ee41f1, type: 3}
 --- !u!4 &578958021
 Transform:
   m_ObjectHideFlags: 0
@@ -25239,6 +25241,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponScript: {fileID: 0}
+  cameraWeaponObj: {fileID: 0}
+  handWeaponObj: {fileID: 0}
   sfxSource: {fileID: 1755887305}
   jumpSound: {fileID: 8300000, guid: e1540959ea03ae64f862fc2d647917a9, type: 3}
   landSound: {fileID: 8300000, guid: 8261beb232446a14abbcf0862ddd91ad, type: 3}
@@ -25486,6 +25490,7 @@ MonoBehaviour:
   pickupDistance: 5
   pickupKey: 101
   handPoint: {fileID: 1422651937}
+  handSocket: {fileID: 0}
   weaponPickupSound: {fileID: 0}
   armorPickupSound: {fileID: 0}
   audioSource: {fileID: 0}
