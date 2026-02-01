@@ -78,7 +78,7 @@ public class GameClear : MonoBehaviour
 
         // 5. 1•b‘Ò‚Á‚Äƒ^ƒCƒgƒ‹‚Ö
         yield return new WaitForSecondsRealtime(1.0f);
-        Time.timeScale = 1.0f;
+        Time.timeScale = 3.0f;
         SceneManager.LoadScene("TitleScene");
     }
 }
