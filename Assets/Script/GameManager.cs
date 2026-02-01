@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
         // UI表示を更新
         if (enemyText != null)
         {
-            enemyText.text = "残り敵数: " + enemyCount;
+            enemyText.text = "EnemyCount : " + enemyCount;
         }
 
         // 0人になった時の処理（例：クリア！）
