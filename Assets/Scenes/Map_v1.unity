@@ -7988,6 +7988,8 @@ MonoBehaviour:
   armorIcon: {fileID: 0}
   weaponIcon: {fileID: 0}
   gameOverUI: {fileID: 307860834}
+  gameOverBGM: {fileID: 8300000, guid: dcd21f811c94d2f439f3f404ae5d8b84, type: 3}
+  buttonSound: {fileID: 8300000, guid: 51568426b8a907b4fac874fad0ee41f1, type: 3}
 --- !u!4 &578958021
 Transform:
   m_ObjectHideFlags: 0
