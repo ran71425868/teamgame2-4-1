@@ -81,8 +81,8 @@ public class Player : MonoBehaviour
         // 4. 強制リセット予約
         if (resetWeaponCoroutine != null) StopCoroutine(resetWeaponCoroutine);
 
-        // アニメーションの長さに合わせて時間を調整してください（例: 0.6f）
-        resetWeaponCoroutine = StartCoroutine(ForceResetWeapon(0.6f));
+        // アニメーションの長さに合わせて時間を調整してください（例: 1.7f）
+        resetWeaponCoroutine = StartCoroutine(ForceResetWeapon(1.7f));
     }
 
     // --- 強制リセット ---
@@ -90,6 +90,13 @@ public class Player : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         if (isAttacking) AE_EndHit();
+    }
+
+    public void AE_StartHit()
+    {
+
+        if (weaponScript != null) weaponScript.EnableHitBox();
+
     }
 
     // --- 攻撃終了処理 ---

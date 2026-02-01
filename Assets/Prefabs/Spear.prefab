@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 8365071162438098455}
   - component: {fileID: 8365071162438098456}
   - component: {fileID: 8049927634843893178}
+  - component: {fileID: -8930849045552868683}
   m_Layer: 0
   m_Name: Spear
   m_TagString: Weapon
@@ -160,6 +161,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-8930849045552868683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4839847625535799810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 995110ee0564a014aa7e4b0d957125d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultDamage: 10
 --- !u!1 &8365071161768477655
 GameObject:
   m_ObjectHideFlags: 0
